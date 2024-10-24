@@ -1,0 +1,1911 @@
+[header]
+name = "Vim Key Bindings"
+version = "1.0"
+
+#- TODO: uncomment later so I don't have to deal with the install
+#- dialog all the time
+#- "meronz.manpages"
+#- usernamehw.vscode-join-lines
+requiredExtensions = []
+
+
+#- ==============================================================
+# ## Modes
+#- ==============================================================
+# - **Insert Mode** - Standard VS Code text editing. 
+[[mode]]
+name = "insert"
+recordEdits = true
+
+# - **Normal Mode** - Vim normal mode, for moving and acting on text through commands.
+[[mode]]
+name = "normal"
+default = true
+highlight = "Highlight" 
+cursorShape = "Block"
+
+# - **Replace Mode** - Vim replace mode, for replacing text under the cursor.
+[[mode]]
+name = "replace"
+highlight = "Highlight" 
+cursorShape = "Block"
+
+# - **Visual Mode** - Vim visual mode, for marking text to be acted on.
+[[mode]]
+name = "visual"
+highlight = "Highlight" 
+cursorShape = "Block"
+
+# - **AwaitingMotion Mode** - This mode is what the editor enters after an action (such as `d` or `c`) has been input as it waits for the associated motion to apply that action to. Its existence as a mode is an implementation detail. There is not an equivalent "mode" in Vim.
+[[mode]]
+name = "awaitingMotion"
+highlight = "Highlight" 
+cursorShape = "Block"
+
+
+#- ==============================================================
+#- ## Kinds
+#- ==============================================================
+[[kind]]
+name = "util"
+description = "These commands do miscellaneous things like switch modes"
+
+[[kind]]
+name = "motion"
+description = "These commands move the cursor or act as targets for actions to operate on"
+
+[[kind]]
+name = "action"
+description = """
+Actions do something with a specified text object (e.g. delete it).
+"""
+
+#- ==============================================================
+#- ## Definitions
+#- ==============================================================
+[[define.selectLinesDown]]
+command = "selection-utilities.shrinkToActive"
+
+[[define.selectLinesDown]]
+if = "count"
+command = "cursorMove"
+args = { to = "down", by = "wrappedLine", select = true }
+computedArgs = { value = "count - 1" }
+
+[[define.resetSelection]]
+command = "selection-utilities.exchangeAnchorActive"
+
+[[define.resetSelection]]
+command = "selection-utilities.shrinkToActive"
+
+#- ==============================================================
+# ## Core
+#- ==============================================================
+# These commands change modes.
+[[path]]
+id = "core"
+name = "Core"
+default.kind = "util"
+when = "editorTextFocus"
+
+#- in "command" like modes (e.g. normal), typing keys without a command defined below should have no effect
+[[bind]]
+path = "core"
+name = "ignore"
+description = "this key does nothing"
+foreach.key = ['{key: .}', 'shift+{key: .}'] #- all keys whose bindings are described by a single character
+key = "{key}"
+command = "master-key.ignore"
+prefixes = "<all-prefixes>"
+mode = ["normal", "visual", "awaitingMotion"]
+when = "editorTextFocus"
+hideInDocs = true
+hideInPalette = true
+priority = -10
+
+[[bind]]
+path = "core"
+foreach.key = ["escape", "ctrl+[", "ctrl+c"]
+combinedKey = "escape/ctrl+[/ctrl+c"
+combinedName = "normal"
+combinedDescription = "enter normal mode"
+key = "{key}"
+mode = ["insert", "visual", "awaitingMotion", "replace"]
+hideInPalette = true
+hideInDocs = false
+command = "runCommands"
+args.commands = [
+      "master-key.enterNormal",
+      "cancelSelection",
+      { command = "master-key.setFlag", args = { name = "select_on", value = false }},
+      { command = "master-key.pushHistoryToStack", args = { value = []}},
+]
+when = "!findWidgetVisible"
+prefixes = "<all-prefixes>"
+
+[[bind]]
+path = "core"
+name = "normal"
+foreach.key = ["escape", "ctrl+[", "ctrl+c"]
+key = "{key}"
+hideInPalette = true
+hideInDocs = true
+when = "suggestWidgetVisible && editorTextFocus && !findWidgetVisible"
+command = "runCommands"
+args.commands = ["hideSuggestWidget", "master-key.enterNormal"]
+mode = ["normal", "awaitingMotion"]
+prefixes = "<all-prefixes>"
+
+[[bind]]
+path = "core"
+name = "replace"
+description = "enter replace mode"
+key = "shift+r"
+mode = "normal"
+command = "master-key.setMode"
+args.value = "replace"
+
+[[bind]]
+path = "core"
+key = "v"
+name = "visual mode"
+mode = "normal"
+description = "enter visual mode"
+command = "runCommands"
+args.commands = [
+      { command = "master-key.setMode", args = { value = "visual" } },
+      { command = "master-key.setFlag", args = { name = "select_on", value = true } },
+]
+
+[[bind]]
+path = "core"
+key = "shift+v"
+name = "visual mode"
+mode = ["normal", "visual"]
+description = "enter visual mode / expand selection to full lines"
+command = "runCommands"
+args.commands = [
+      { command = "master-key.setMode", args = { value = "visual" } },
+      { command = "master-key.setFlag", args = { name = "select_on", value = true } },
+      "expandLineSelection",
+]
+
+[[bind]]
+path = "core"
+foreach.key = ["v"]
+key = "{key}"
+name = "visual mode"
+mode = "visual"
+description = "exit visual mode"
+command = "runCommands"
+args.commands = [
+      "selection-utilities.shrinkToActive",
+      "master-key.enterNormal",
+      { command = "master-key.setFlag", args = { name = "select_on", value = false } },
+]
+
+[[bind]]
+path = "action.basic"
+key = "i"
+name = "insert"
+description = "switch to insert mode (right before character)"
+command = "runCommands"
+args.commands = ["selection-utilities.shrinkToActive", "master-key.enterInsert"]
+mode = ["normal"]
+
+[[bind]]
+path = "action.basic"
+key = "a"
+name = "append"
+description = "switch to insert mode (right after character)"
+mode = ["normal"]
+command = "runCommands"
+args.commands = [
+      "selection-utilities.shrinkToActive",
+      "cursorRight",
+      "master-key.enterInsert",
+]
+
+[[bind]]
+path = "action.basic"
+key = "shift+i"
+name = "insert start"
+description = "move to beginning of line / selection and enter insert mode"
+mode = ["normal", "visual"]
+command = "runCommands"
+args.commands = [
+      { command = "cursorMove", args = { to = "wrappedLineFirstNonWhitespaceCharacter", select = false } },
+      "master-key.enterInsert",
+]
+
+[[bind]]
+path = "action.basic"
+key = "shift+a"
+name = "insert end"
+description = "move to end of line / selection and enter insert mode"
+mode = ["normal", "visual"]
+command = "runCommands"
+args.commands = [
+      { command = "cursorMove", args = { to = "wrappedLineEnd", select = false } },
+      "master-key.enterInsert",
+]
+
+# ## Repeating Motions
+
+# The number keys (0-9) can be typed as a prefix to most commands and serve as a `count`
+# argument to that command. In most cases this causes the command to be repeated `count`
+# times e.g. 2w would move two words starting from the current cursor position.
+
+[[path]]
+id = "count"
+name = "count" 
+
+[[bind]]
+path = "count"
+kind = "count"
+foreach.num = ['{key: [1-9]}']
+name = "count {num}"
+key = "{num}"
+command = "master-key.updateCount"
+description = "Add digit {num} to the count argument of a command"
+combinedKey = "1-9"
+when = "editorTextFocus"
+combinedName = "count 1-9"
+combinedDescription = "Add digit 1-9 to count argument of a command"
+args.value = "{num}"
+resetTransient = false
+mode = ["normal", "visual", "awaitingMotion"]
+hideInDocs = true
+
+#- ==============================================================
+# ## Insert Mode
+#- ==============================================================
+# There are a limited number of commands available directly from insert mode.
+[[path]]
+id = "insert"
+name = "insert"
+description = "Insert mode commands"
+
+[[bind]]
+path = "insert"
+key = "ctrl+h"
+name = "delete ←"
+mode = "insert"
+description = "delete left"
+command = "deleteLeft"
+
+[[bind]]
+path = "insert"
+key = "ctrl+w"
+name = "delete word ←"
+mode = "insert"
+description = "delete word left"
+command = "deleteWordLeft"
+
+[[bind]]
+path = "insert"
+key = "ctrl+j"
+name = "linebreak"
+mode = "insert"
+description = "insert line break"
+command = "lineBreakInsert"
+
+[[bind]]
+path = "action.basic"
+key = "ctrl+t"
+name = "indent"
+mode = ["insert"]
+description = "Indent lines"
+command = "editor.action.indentLines"
+
+[[bind]]
+path = "action.basic"
+key = "ctrl+d"
+name = "outdent"
+mode = ["insert"]
+description = "outdent lines"
+command = "editor.action.outdentLines"
+
+#- ==============================================================
+#- ## Replace Mode
+#- ==============================================================
+[[path]]
+id = "replace"
+name = "replace"
+
+[[bind]]
+path = "replace"
+name = "replace"
+mode = "replace"
+foreach.key = ["{key:[a-z0-9]}", "shift+{key: [a-z0-9]}"]
+key = "{key}"
+command = "runCommands"
+hideInDocs = true
+hideInPalette = true
+args.commands = [
+      { command = "master-key.replaceChar", args = {char = "{key}"}},
+      { command = "cursorMove", args = {by = "char", to = "right"}}
+]
+
+#- ==============================================================
+# ## Actions
+#- ==============================================================
+[[path]]
+id = "action"
+name = "Actions"
+description = "Commands that change the text"
+default.kind = "action"
+
+
+#- ==============================================================
+# ### Basic Actions
+#- ==============================================================
+# These commands make some immediate change to the text, they don't require an associated motion.
+[[path]]
+id = "action.basic"
+name = "Basic Actions"
+description = "These commands make some immediate change to the text, either by acting on already marked text in visual mode, or because they don't require a text object."
+default.kind = "action"
+when = "!suggestWidgetVisible && editorTextFocus && !findWidgetVisible"
+
+[[bind]]
+path = "action.basic"
+key = "x"
+mode = "normal"
+name = "delete char"
+description = "deletes a single character under the cursor"
+command = "runCommands"
+args.commands = [
+      "selection-utilities.shrinkToActive",
+      { command = "cursorMove", args = { to = "right", select = true }, computedArgs = { value = "count" } },
+     "editor.action.clipboardCutAction"
+]
+
+[[bind]]
+path = "action.basic"
+foreach.key = ["x", "d"]
+key = "{key}"
+mode = ["visual"]
+name = "delete"
+combinedName = "delete"
+combinedKey = "x/d"
+combinedDescription = "delete selected text"
+command = "runCommands"
+args.commands = [
+      "editor.action.clipboardCutAction",
+      "master-key.enterNormal",
+      { command = "master-key.setFlag", args = { name = "select_on", value = false } },
+]
+
+[[bind]]
+path = "action.basic"
+foreach.key = ["x", "d"]
+key = "{key}"
+mode = ["normal"]
+name = "delete"
+when = "editorHasSelection"
+combinedName = "delete"
+combinedKey = "x/d"
+combinedDescription = "delete selected text"
+command = "runCommands"
+args.commands = [
+      "editor.action.clipboardCutAction",
+      "master-key.enterNormal",
+      { command = "master-key.setFlag", args = { name = "select_on", value = false } },
+]
+
+[[bind]]
+path = "action.basic"
+key = "shift+d"
+name = "delete eol"
+description = """without a count: delete from current char to end of line. with a count:
+also delete the following n-1 lines.
+"""
+mode = "normal"
+when = "master-key.count <= 1"
+command = "runCommands"
+args.commands = [
+      "selection-utilities.shrinkToActive",
+      "deleteAllRight",
+]
+
+[[bind]]
+path = "action.basic"
+key = "shift+d"
+name = "delete eol"
+description = """without a count: delete from current char to end of line. with a count:
+also delete the previous `count` lines.
+"""
+hideInDocs = true
+mode = "normal"
+when = "master-key.count > 1"
+command = "runCommands"
+args.commands = [
+      "selection-utilities.shrinkToActive",
+      { command = "cursorMove", args = { to = "down", by = "wrappedLine", select = true }, computedArgs = {value = "count - 1"} },
+      "cursorLineEndSelect",
+      "deleteAllRight",
+]
+
+[[bind]]
+path = "action.basic"
+key = "c"
+name = "change"
+description = "Change text object"
+when = "editorTextFocus && editorHasSelection"
+mode = ["normal"]
+command = "runCommands"
+hideInDocs = true
+args.commands = ["editor.action.clipboardCutAction", "master-key.enterInsert"]
+
+
+[[bind]]
+path = "action.targeted"
+key = "c"
+name = "change"
+description = "delete selected text, enter insert mode"
+when = "editorTextFocus && editorHasSelection"
+mode = ["visual"]
+command = "runCommands"
+args.commands = ["editor.action.clipboardCutAction", "master-key.enterInsert"]
+
+[[bind]]
+path = "action.basic"
+key = "shift+c"
+name = "change eol"
+description = """without a count: change from current char to end of line. With a count:
+also delete the following `count` lines.
+"""
+mode = "normal"
+when = "master-key.count <= 1"
+command = "runCommands"
+args.commands = [
+      "selection-utilities.shrinkToActive",
+      "deleteAllRight",
+      "master-key.enterInsert",
+]
+
+[[bind]]
+path = "action.basic"
+key = "shift+c"
+name = "change eol"
+description = """without a count: change from current char to end of line. With a count:
+also delete the following `count` lines.
+"""
+mode = "normal"
+when = "master-key.count > 1"
+command = "runCommands"
+args.commands = [
+      "selection-utilities.shrinkToActive",
+      { defined = "selectLinesDown" },
+      "cursorLineEndSelect",
+      "deleteAllRight",
+      "master-key.enterInsert",
+]
+
+[[bind]]
+path = "action.basic"
+key = "c"
+name = "change line"
+hideInDocs = true
+description = "Change line"
+if = "master-key.changing_on"
+command = "runCommands"
+args.commands = [
+      "expandLineSelection",
+      "selection-utilities.trimSelectionWhitespace",
+      "master-key.replayFromStack",
+]
+mode = ["awaitingMotion"]
+
+[[bind]]
+path = "action.basic"
+key = "shift+y"
+name = "yank line"
+when = "master-key.count <= 1"
+mode = "normal"
+description = "yank \\<count\\> lines"
+command = "editor.action.clipboardCopyAction"
+
+[[bind]]
+path = "action.basic"
+key = "shift+y"
+name = "yank line"
+when = "master-key.count > 1"
+mode = "normal"
+description = "yank \\<count\\> lines"
+command = "runCommands"
+args.commands = [
+      { command = "cursorMove", args = { to = "down", by = "wrappedLine", select = true }, computedArgs = {value = "count - 1"} },
+      "expandLineSelection",
+      "editor.action.clipboardCopyAction",
+      { defined = "resetSelection" },
+]
+
+[[bind]]
+path = "action.basic"
+key = "y"
+name = "yank"
+description = "yank selected text"
+command = "runCommands"
+args.commands = [
+      "editor.action.clipboardCopyAction", 
+      { defined = "resetSelection" },
+      "master-key.enterNormal",
+      { command = "master-key.setFlag", args = {name = "select_on", value = false }}
+]
+mode = ["visual"]
+
+[[bind]]
+path = "action.basic"
+key = "shift+j"
+name = "join"
+when = "master-key.count <= 1"
+description = "joins lines with space separator. in normal mode joins the current and next line. with count join the current and next n-1 lines"
+command = "editor.action.joinLines"
+mode = ["normal", "visual"]
+
+[[bind]]
+path = "action.basic"
+key = "shift+j"
+name = "join"
+when = "master-key.count > 1"
+description = "joins lines with space separator. in normal mode joins the current and next line. with count join the current and next n-1 lines"
+command = "runCommands"
+args.commands = [
+      { defined = "selectLinesDown" },
+      "editor.action.joinLines",
+      { defined = "resetSelection" }
+]
+mode = ["normal", "visual"]
+
+[[bind]]
+path = "action.basic"
+key = "g shift+j"
+name = "join (no space)"
+description = "joins lines with no separator. in normal mode joins the current and next line"
+command = "joinLines.joinLines"
+args.separator = ""
+mode = ["normal", "visual"]
+
+[[bind]]
+path = "action.basic"
+key = "r"
+name = "replace char"
+mode = "normal"
+description = "replace the character under the cursor"
+command = "master-key.replaceChar"
+
+[[bind]]
+path = "action.basic"
+key = "p"
+name = "paste"
+mode = ["normal", "visual"]
+description = "paste clipboard contents"
+command = "editor.action.clipboardPasteAction"
+
+[[bind]]
+path = "action.basic"
+name = "open below"
+description = "without selection: open a line below current line and enter insert,"
+key = "o"
+mode = "normal"
+when = "!editorHasSelection"
+command = "runCommands"
+combinedName = "open below/above"
+combinedKey = "o/shift+o"
+combinedDescription = "open line below / above current line"
+args.commands = ["editor.action.insertLineAfter", "master-key.enterInsert"]
+
+[[bind]]
+path = "action.basic"
+name = "open above"
+key = "shift+o"
+mode =  "normal"
+when = "!editorHasSelection"
+command = "runCommands"
+combinedName = "open below/above"
+combinedKey = "o/shift+o"
+combinedDescription = "open line below / above current line"
+args.commands = [ "editor.action.insertLineBefore", "master-key.enterInsert" ]
+
+[[bind]]
+path = "action.basic"
+foreach.key = ["o", "shift+o"]
+key = "{key}"
+combinedName = "open below/above, act →/←"
+combinedKey = "o/shift+o"
+combinedDescription = "move cursor to end/start of selection"
+when = "editorHasSelection"
+mode = ["normal", "visual"]
+command = "selection-utilities.exchangeAnchorActive"
+
+[[bind]]
+path = "action.basic"
+key = "u"
+name = "lowercase"
+description = "convert to lowercase"
+mode = "visual"
+when = "editorHasSelection"
+command = "runCommands"
+args.commands = [
+      "editor.action.transformToLowercase",
+      { defined = "resetSelection" },
+      "master-key.enterNormal",
+      {command = "master-key.setFlag", args = {name = "select_on", value = false}}
+]
+
+[[bind]]
+path = "action.basic"
+key = "shift+u"
+name = "uppercase"
+description = "convert to uppercase"
+mode = "visual"
+when = "editorHasSelection"
+command = "runCommands"
+args.commands = [
+      "editor.action.transformToUppercase",
+      { defined = "resetSelection" },
+      "master-key.enterNormal",
+      {command = "master-key.setFlag", args = {name = "select_on", value = false}}
+]
+
+[[bind]]
+path = "action.basic"
+key = "shift+."
+name = "indent"
+mode = ["visual"]
+description = "indent selected text"
+command = "editor.action.indentLines"
+
+[[bind]]
+path = "action.basic"
+key = "shift+,"
+name = "outdent"
+mode = ["visual"]
+description = "outdent selected text"
+command = "editor.action.outdentLines"
+
+#- ==============================================================
+# ### Targeted Actions
+#- ==============================================================
+# These commands require information about what text to apply the change to. The commands that support visual mode will act on the currently selected text. In normal mode a motion or text object must be provided after the command. They support counts, for example `3 d w` or `d 3 w` will delete 3 words.
+[[path]]
+id = "action.targeted"
+name = "Targeted Actions"
+description = "These actions operate on a provided text action"
+default.kind = "action"
+when = "editorTextFocus"
+
+[[bind]]
+path = "action.targeted"
+key = "g"
+hideInDocs = true
+command = "master-key.prefix"
+
+#- This is the general pattern used for supporting vim's action -> motion sequence. 
+#- Commands set relevant flags (generally select_on), then push commands to the stack that should be run after the motion is complete
+#- Every motion uses master-key.replayFromStack after completing.
+[[bind]]
+path = "action.targeted"
+key = "g u"
+name = "lowercase"
+description = "convert to lowercase"
+combinedKey= "u/shift+u"
+combinedName = "lowercase/uppercase"
+combinedDescription = "convert to lowercase/uppercase"
+when = "editorTextFocus"
+mode = "normal"
+command = "runCommands"
+
+[[bind.args.commands]]
+command = "master-key.setFlag"
+args = { name = "select_on", value = true }
+
+[[bind.args.commands]]
+command = "master-key.setMode"
+args = { value = "awaitingMotion" }
+
+[[bind.args.commands]]
+command = "master-key.pushHistoryToStack"
+args.value = [
+      { do = [
+            { command = "editor.action.transformToLowercase" },
+            { command = "master-key.enterNormal" },
+            { command = "master-key.pushHistoryToStack", args.value = []},
+            { command = "master-key.setFlag", args = {name = "select_on", value = false}},
+      ] }
+]
+
+[[bind]]
+path = "action.targeted"
+key = "g shift+u"
+name = "uppercase"
+description = "convert to uppercase"
+combinedKey= "u/shift+u"
+combinedName = "lowercase/uppercase"
+combinedDescription = "convert to lowercase/uppercase"
+when = "editorTextFocus"
+mode = "normal"
+command = "runCommands"
+
+[[bind.args.commands]]
+command = "master-key.setFlag"
+args = { name = "select_on", value = true }
+
+[[bind.args.commands]]
+command = "master-key.setMode"
+args = { value = "awaitingMotion" }
+
+[[bind.args.commands]]
+command = "master-key.pushHistoryToStack"
+args.value = [
+      { do = [
+            { command = "editor.action.transformToUppercase" },
+            { command = "master-key.enterNormal" },
+            { command = "master-key.pushHistoryToStack", args.value = []},
+            { command = "master-key.setFlag", args = {name = "select_on", value = false}},
+      ] }
+]
+
+[[bind]]
+path = "action.targeted"
+key = "y"
+name = "yank"
+description = "yank"
+args.value = "yank"
+when = "editorTextFocus"
+mode = "normal"
+command = "runCommands"
+
+[[bind.args.commands]]
+command = "master-key.setFlag"
+args = { name = "select_on", value = true }
+
+#- This flag is to support the `y y` shortcut
+[[bind.args.commands]]
+command = "master-key.setFlag"
+args = { name = "yanking_on", value = true }
+
+[[bind.args.commands]]
+command = "master-key.setMode"
+args = { value = "awaitingMotion" }
+
+[[bind.args.commands]]
+command = "master-key.pushHistoryToStack"
+args.value = [
+      { do = [
+            { command = "editor.action.clipboardCopyAction" },
+            { defined = "resetSelection" },
+            { command = "master-key.pushHistoryToStack", args.value = []},
+            { command = "master-key.setFlag", args = {name = "select_on", value = false}},
+            { command = "master-key.setFlag", args = {name = "yanking_on", value = false}},
+      ] }
+]
+
+
+[[bind]]
+path = "action.basic"
+#- I don't want people to have to think about this as awaitingMotion mode. Ideally would be documented as `y y` in normal mode.
+#- it's ok for text object like 'a w'. It's not ok here because it's not a general purpose text object, it's a specific
+#- shortcut when the mode is initiated with 'y'
+key = "y"
+name = "yank line"
+description = "yank line (only if awaitingMotion mode was initialized with `y`, essentially `y y`)"
+command = "runCommands"
+if = "master-key.yanking_on"
+args.commands = ["editor.action.clipboardCopyAction", "master-key.enterNormal", "master-key.replayFromStack"]
+mode = ["awaitingMotion"]
+
+[[bind]]
+path = "action.targeted"
+key = "d"
+name = "delete"
+description = "delete"
+when = "!editorHasSelection && editorTextFocus"
+mode = "normal"
+command = "runCommands"
+resetTransient = false
+
+[[bind.args.commands]]
+command = "master-key.setFlag"
+args = { name = "select_on", value = true }
+
+[[bind.args.commands]]
+command = "master-key.setFlag"
+args = { name = "deleting_on", value = true }
+
+[[bind.args.commands]]
+command = "master-key.setMode"
+args = { value = "awaitingMotion" }
+
+[[bind.args.commands]]
+command = "master-key.pushHistoryToStack"
+args.value = [
+      { do = [
+            { command = "editor.action.clipboardCutAction" },
+            { command = "master-key.enterNormal" },
+            { command = "master-key.pushHistoryToStack", args.value = []},
+            { command = "master-key.setFlag", args = {name = "select_on", value = false}},
+      ] }
+]
+
+[[bind]]
+path = "action.targeted"
+key = "d"
+name = "delete"
+description = "delete line (only if awaitingMotion mode was initialized with `d`, essentially `d d`)"
+when = "editorTextFocus"
+if = "master-key.deleting_on"
+mode = "awaitingMotion"
+command = "runCommands"
+args.commands = [
+      "editor.action.deleteLines",
+      {command = "master-key.enterNormal"},
+      {command = "master-key.setFlag",args = {name = "select_on", value = false}}, 
+      {command = "master-key.setFlag",args = {name = "deleting_on", value = false}}, 
+      {command = "master-key.pushHistoryToStack", args = {value = []}},
+]
+
+[[bind]]
+path = "action.targeted"
+key = "c"
+name = "change"
+description = "delete and enter insert mode"
+when = "!editorHasSelection && editorTextFocus"
+mode = "normal"
+command = "runCommands"
+
+[[bind.args.commands]]
+command = "master-key.setFlag"
+args = { name = "select_on", value = true }
+
+[[bind.args.commands]]
+command = "master-key.setFlag"
+args = { name = "cutting_on", value = true }
+
+[[bind.args.commands]]
+command = "master-key.setMode"
+args = { value = "awaitingMotion" }
+
+[[bind.args.commands]]
+command = "master-key.pushHistoryToStack"
+args.value = [
+      { do = [
+            { command = "editor.action.clipboardCutAction" },
+            { command = "master-key.enterInsert" },
+            { command = "master-key.pushHistoryToStack", args.value = []},
+            { command = "master-key.setFlag", args = {name = "select_on", value = false}},
+            { command = "master-key.setFlag", args = {name = "changing_on", value = false}},
+      ] }
+]
+
+[[bind]]
+path = "action.targeted"
+key = "shift+."
+name = "indent"
+description = "indent"
+when = "editorTextFocus"
+mode = "normal"
+command = "runCommands"
+resetTransient = false
+
+[[bind.args.commands]]
+command = "master-key.setFlag"
+args = { name = "select_on", value = true }
+
+[[bind.args.commands]]
+command = "master-key.setFlag"
+args = { name = "indenting_on", value = true }
+
+[[bind.args.commands]]
+command = "master-key.setMode"
+args = { value = "awaitingMotion" }
+
+[[bind.args.commands]]
+command = "master-key.pushHistoryToStack"
+args.value = [
+      { do = [
+            { command = "editor.action.indentLines" },
+            { command = "selection-utilities.exchangeAnchorActive" },
+            { command = "selection-utilities.shrinkToActive" },
+            #- defined doesn't seem to work in this context
+            #- { defined = "resetSelection" },
+            { command = "master-key.enterNormal" },
+            { command = "master-key.pushHistoryToStack", args.value = []},
+            { command = "master-key.setFlag", args = {name = "select_on", value = false}},
+            { command = "master-key.setFlag", args = {name = "indenting_on", value = false}},
+      ] }
+]
+
+[[bind]]
+#- this felt like the appropriate place in the documentation, but this path is needed
+#- for the repeating to work as you'd expect
+path = "motion.obj"
+key = "shift+."
+name = "indent"
+description = "indent current line (only if awaitingMotion mode was initialized with `shift+.`, essentially `shift+. shift+.`)"
+if = "indenting_on"
+mode = "awaitingMotion"
+when = "master-key.count >= 1"
+command = "runCommands"
+args.commands = [
+      { defined = "selectLinesDown" },
+      "master-key.replayFromStack",
+]
+
+[[bind]]
+path = "motion.obj"
+key = "shift+."
+name = "indent"
+mode = "awaitingMotion"
+if = "indenting_on"
+when = "master-key.count < 1"
+description = "indent current line (only if awaitingMotion mode was initialized with `shift+.`, essentially `shift+. shift+.`)"
+command = "master-key.replayFromStack"
+
+[[bind]]
+path = "action.targeted"
+key = "shift+,"
+name = "outdent"
+description = "outdent"
+when = "editorTextFocus"
+mode = "normal"
+command = "runCommands"
+resetTransient = false
+
+[[bind.args.commands]]
+command = "master-key.setFlag"
+args = { name = "select_on", value = true }
+
+[[bind.args.commands]]
+command = "master-key.setFlag"
+args = { name = "outdenting_on", value = true }
+
+[[bind.args.commands]]
+command = "master-key.setMode"
+args = { value = "awaitingMotion" }
+
+[[bind.args.commands]]
+command = "master-key.pushHistoryToStack"
+args.value = [
+      { do = [
+            { command = "editor.action.outdentLines" },
+            { command = "selection-utilities.exchangeAnchorActive" },
+            { command = "selection-utilities.shrinkToActive" },
+            { command = "master-key.enterNormal" },
+            { command = "master-key.setFlag", args = {name = "select_on", value = false}},
+            { command = "master-key.setFlag", args = {name = "outdenting_on", value = false}},
+            { command = "master-key.pushHistoryToStack", args.value = []},
+      ] }
+]
+
+[[bind]]
+path = "motion.obj"
+key = "shift+,"
+name = "outdent"
+mode = "awaitingMotion"
+if = "outdenting_on"
+when = "master-key.count >= 1"
+description = "outdent current line (only if awaitingMotion mode was initialized with `shift+,`, essentially `shift+, shift+,`)"
+command = "runCommands"
+args.commands = [
+      { defined = "selectLinesDown" },
+      "master-key.replayFromStack",
+]
+
+[[bind]]
+path = "motion.obj"
+key = "shift+,"
+name = "outdent"
+if = "outdenting_on"
+mode = "awaitingMotion"
+when = "master-key.count < 1"
+description = "outdent lines"
+command = "master-key.replayFromStack"
+
+
+#- ==============================================================
+# ## Motions
+#- ==============================================================
+#- ==============================================================
+# ### Basic Motions
+#- ==============================================================
+# Basic motions can be used directly to navigate text, or in combination with targeted actions.
+[[path]]
+id = "motion"
+name = "Motions"
+when = "editorTextFocus && !findWidgetVisible"
+default.mode = "normal"
+
+[[path]]
+id = "motion.prim"
+name = "Primitive Motions"
+description = "Motions fundamental to moving around in the editor. Can be used directly as motions as well as as text objects."
+default.command = "runCommands"
+default.mode = ["normal", "visual", "awaitingMotion"]
+
+[[bind]]
+path = "motion.prim"
+key = "h"
+name = "←"
+combinedName = "←/→"
+combinedKey = "h/l"
+combinedDescription = "move left/right"
+description = "move left"
+args.commands = [
+      { command = "cursorMove", args = { to = "left" }, computedArgs = {value = "count", select = "select_on" }},
+      "master-key.replayFromStack"
+]
+
+[[bind]]
+path = "motion.prim"
+key = "l"
+name = "→"
+combinedName = "←/→"
+combinedKey = "h/l"
+combinedDescription = "move left/right"
+description = "move right"
+args.commands = [
+      { command = "cursorMove", args = { to = "right" }, computedArgs = {value = "count", select = "select_on" }},
+      "master-key.replayFromStack"
+]
+
+[[bind]]
+path = "motion.prim"
+key = "j"
+name = "↓"
+combinedName = "↓/↑"
+combinedKey = "j/k"
+combinedDescription = "move down/up"
+description = "move down"
+args.commands = [
+      { command = "cursorMove", args = { to = "down", by = "line" }, computedArgs = {value = "count", select = "select_on" }},
+      "master-key.replayFromStack"
+]
+
+[[bind]]
+path = "motion.prim"
+key = "k"
+name = "↑"
+description = "move up"
+combinedName = "↓/↑"
+args.commands = [
+      { command = "cursorMove", args = { to = "up", by = "line" }, computedArgs = {value = "count", select = "select_on" }},
+      "master-key.replayFromStack"
+]
+
+[[bind]]
+path = "motion.prim"
+key = "g"
+name = "goto"
+hideInDocs = true
+command = "master-key.prefix"
+
+[[bind]]
+path = "motion.prim"
+key = "g j"
+name = "wrapped ↓"
+combinedName = "wrapped ↓/↑"
+combinedKey = "j/k"
+combinedDescription = "move down/up"
+description = "move down"
+args.commands = [
+      { command = "cursorMove", args = { to = "down", by = "wrappedLine" }, computedArgs = {value = "count", select = "select_on" }},
+      "master-key.replayFromStack"
+]
+
+[[bind]]
+path = "motion.prim"
+key = "g k"
+name = "wrapped ↑"
+description = "move up"
+combinedName = "wrapped ↓/↑"
+args.commands = [
+      { command = "cursorMove", args = { to = "up", by = "wrappedLine" }, computedArgs = {value = "count", select = "select_on" }},
+      "master-key.replayFromStack"
+]
+
+[[bind]]
+path = "motion.prim"
+key = "shift+g"
+priority = 1
+name = "doc end"
+description = "move to end of document"
+command = "runCommands"
+mode = ["normal", "visual", "awaitingMotion"]
+args.commands = [
+      #- implemented this way so that the documentation doesn't have separate entries, 
+      #- there's not a 'combinedModes' option
+      { if = "mode === 'normal'", command = "cursorBottom" },
+      { if = "mode !== 'normal'", command = "cursorBottomSelect" },
+      "master-key.replayFromStack"
+]
+
+[[bind]]
+path = "motion.prim"
+key = "g g"
+name = "doc start"
+description = "move to start (line) of document"
+mode = ["normal", "visual", "awaitingMotion"]
+args.commands = [
+      #- implemented this way so that the documentation doesn't have separate entries, 
+      #- there's not a 'combinedModes' option
+      { if = "mode === 'normal'", command = "cursorTop" },
+      { if = "mode !== 'normal'", command = "cursorTopSelect"},
+      "master-key.replayFromStack",
+]
+
+[[bind]]
+path = "motion.prim"
+key = "shift+]"
+name = "parag →"
+combinedKey = "shift+[/shift+]"
+combinedName = "paragraph ←/→"
+combinedDescription = "move to beginning of previous/next paragraph"
+
+[[bind.args.commands]]
+command = "selection-utilities.moveBy"
+args = {unit = "paragraph"}
+computedArgs = {value = "(count || 1)", select = "select_on"}
+
+[[bind.args.commands]]
+command = "master-key.replayFromStack"
+
+[[bind]]
+path = "motion.prim"
+key = "shift+["
+name = "parag ←"
+combinedKey = "shift+[/shift+]"
+combinedName = "paragraph ←/→"
+combinedDescription = "move to beginning of previous/next paragraph"
+
+
+[[bind.args.commands]]
+command = "selection-utilities.moveBy"
+args = {unit = "paragraph"}
+computedArgs = {value = "-(count || 1)", select = "select_on"}
+
+[[bind.args.commands]]
+command = "master-key.replayFromStack"
+
+[[bind]]
+path = "motion.prim"
+key = "w"
+name = "subwrd →"
+description = "next subword (camel/snake case)"
+combinedName = "subwrd ←/→"
+combinedDescription = "move to next/prev subword (camel/snake case)"
+combinedKey = "w/b"
+
+[[bind.args.commands]]
+command = "selection-utilities.moveBy"
+args = {unit = "subword"}
+computedArgs = {value = "count || 1", select = "select_on"}
+
+[[bind.args.commands]]
+command = "master-key.replayFromStack"
+
+[[bind]]
+path = "motion.prim"
+key = "b"
+name = "subwrd ←"
+description = "move to previous subword (camel/snake case)"
+combinedName = "subwrd ←/→"
+
+[[bind.args.commands]]
+command = "selection-utilities.moveBy"
+args = {unit = "subword"}
+computedArgs = {value = "-count || -1", select = "select_on"}
+
+[[bind.args.commands]]
+command = "master-key.replayFromStack"
+
+[[bind]]
+path = "motion.prim"
+key = "shift+w"
+name = "word →"
+description = "next word"
+combinedName = "word ←/→"
+combinedDescription = "next/prev word"
+combinedKey = "shift+w/b"
+
+[[bind.args.commands]]
+command = "selection-utilities.moveBy"
+args = {unit = "word"}
+computedArgs = {value = "count || 1", select = "select_on"}
+
+[[bind.args.commands]]
+command = "master-key.replayFromStack"
+
+[[bind]]
+path = "motion.prim"
+key = "shift+b"
+name = "word ←"
+combinedName = "word ←/→"
+description = "previous word"
+prefixes = [""]
+
+[[bind.args.commands]]
+command = "selection-utilities.moveBy"
+args = {unit = "word"}
+computedArgs = {value = "-count || -1", select = "select_on"}
+
+[[bind.args.commands]]
+command = "master-key.replayFromStack"
+
+[[bind]]
+path = "motion.prim"
+key = "e"
+name = "subwrd end"
+description = "next subword (camel/snake case) end"
+
+[[bind.args.commands]]
+command = "selection-utilities.moveBy"
+args = {unit = "subword", boundary = "start"}
+computedArgs = {value = "count || 1", select = "select_on"}
+
+[[bind.args.commands]]
+command = "master-key.replayFromStack"
+
+[[bind]]
+path = "motion.prim"
+key = "shift+e"
+name = "word end"
+description = "next word end"
+
+[[bind.args.commands]]
+command = "selection-utilities.moveBy"
+args = {unit = "word", boundary = "end"}
+computedArgs = {value = "count || 1", select = "select_on"}
+
+[[bind.args.commands]]
+command = "master-key.replayFromStack"
+
+[[bind]]
+path = "motion.prim"
+key = "0"
+name = "start"
+description = "start of line"
+combinedDescription = "move to start"
+command = "runCommands"
+resetTransient = false
+args.commands = [
+      { if = "count !== 0", command = "master-key.updateCount", args = { value = "0" } },
+      { if = "count === 0 && !select_on", command = "cursorLineStart" },
+      { if = "count === 0 && select_on", command = "cursorLineStartSelect" },
+]
+
+[[bind]]
+path = "motion.prim"
+key = "shift+6"
+name = "line home"
+description = "toggles between first non-whitespace and absolute first characters in line"
+combinedDescription = "move to home"
+command = "cursorHome"
+
+[[bind]]
+path = "motion.prim"
+key = "g shift+-"
+name = "line end"
+description = "move to last non whitespace char"
+command = "cursorMove"
+args.to = "wrappedLineLastNonWhitespaceCharacter"
+
+[[bind]]
+path = "motion.prim"
+key = "shift+4"
+name = "end"
+description = "end of line"
+mode = ["normal", "visual", "awaitingMotion"]
+command = "runCommands"
+args.commands = [
+      #- implemented this way so that the documentation doesn't have separate entries, 
+      #- there's not a 'combinedModes' option
+      {if = "mode === 'normal'", command = "cursorLineEnd"},
+      {if = "mode !== 'normal'", command = "cursorLineEndSelect"},
+      {command = "master-key.replayFromStack"}
+]
+
+[[bind]]
+path = "motion.prim"
+key = "shift+5"
+name = "to bracket"
+mode = ["normal", "visual", "awaitingMotion"]
+description = "move to matching bracket"
+command = "runCommands"
+args.commands = [
+      #- implemented this way so that the documentation doesn't have separate entries, 
+      #- there's not a 'combinedModes' option
+      { if = "mode === 'normal'", command = "editor.action.jumpToBracket" },
+      { if = "mode !== 'normal'", command = "selection-utilities.expandWithinBrackets" },
+      { if = "mode !== 'normal'", command = "master-key.replayFromStack" },
+]
+
+#- ==============================================================
+# ### Search Motions
+#- ==============================================================
+# Search motions use user input to move the cursor/selection to a specific location.
+
+[[path]]
+id = "motion.search"
+name = "Search Related Motions"
+description = "Motions related to searching for text in a document"
+default.command = "master-key.search"
+default.args.caseSensitive = true
+default.args.backwards = false
+default.args.selectTillMatch = true
+default.args.wrapAround = true
+default.mode = ["normal", "visual", "awaitingMotion"]
+
+[[bind]]
+path = "motion.search"
+key = "f"
+name = "find char"
+description = "Find the next char (include char in selection)"
+combinedName = "find char (back)"
+combinedDescription = "Find the next (previous) char (include char in selection)"
+combinedKey = "f (shift+f)"
+command = "runCommands"
+
+[[bind.args.commands]]
+command = "master-key.search"
+args = {caseSensitive = true, backwards = false, offset = "inclusive", acceptAfter = 1, wrapAround = true, register = "search"}
+computedArgs = {skip = "count-1", selectTillMatch = 'select_on'}
+
+[[bind.args.commands]]
+command = "master-key.setFlag"
+args = { name = "searchingbackwards_on", value = false }
+
+[[bind.args.commands]]
+command = "master-key.replayFromStack"
+
+[[bind]]
+path = "motion.search"
+key = "shift+f"
+name = "find char back"
+description = "Find the previous char (include char in selection)"
+combinedName = "find char (back)"
+command = "runCommands"
+
+[[bind.args.commands]]
+command = "master-key.search"
+args = {caseSensitive = true, backwards = true, offset = "inclusive", acceptAfter = 1, wrapAround = true, register = "search"}
+computedArgs = {skip = "count-1", selectTillMatch = 'select_on'}
+
+[[bind.args.commands]]
+command = "master-key.setFlag"
+args = { name = "searchingbackwards_on", value = true }
+
+[[bind.args.commands]]
+command = "master-key.replayFromStack"
+
+[[bind]]
+path = "motion.search"
+key = "t"
+name = "to char"
+description = "Find the next char (exclude char in selection)"
+combinedName = "to char (back)"
+combinedKey = "t (shift+t)"
+combinedDescription = "Find the next/previous char (exclude char in selection)"
+command = "runCommands"
+
+[[bind.args.commands]]
+command = 'master-key.search'
+args.acceptAfter = 1
+args.offset = "start"
+args.register = "search"
+computedArgs.skip = "count-1"
+computedArgs.selectTillMatch = 'select_on'
+
+[[bind.args.commands]]
+command = "master-key.setFlag"
+args = { name = "searchingbackwards_on", value = false }
+
+[[bind.args.commands]]
+command = "master-key.replayFromStack"
+
+[[bind]]
+path = "motion.search"
+key = "shift+t"
+name = "to char back"
+description = "Find the previous char (exclude char in selection)"
+combinedName = "to char (back)"
+command = "runCommands"
+
+[[bind.args.commands]]
+command = "master-key.search"
+args.acceptAfter = 1
+args.offset = "end"
+args.backwards = true
+args.register = "search"
+computedArgs.skip = "count-1"
+computedArgs.selectTillMatch = 'select_on'
+
+[[bind.args.commands]]
+command = "master-key.setFlag"
+args = { name = "searchingbackwards_on", value = true }
+
+[[bind.args.commands]]
+command = "master-key.replayFromStack"
+
+[[bind]]
+path = "motion.search"
+key = "/"
+name = "search →"
+description = "search forwards"
+combinedName = "search → (←)"
+combinedDescription = "search forwards (backwards)"
+combinedKey = "/ (shift+/)"
+command = "runCommands"
+
+[[bind.args.commands]]
+command = "master-key.search"
+args.caseSensitive = true
+args.backwards = false
+computedArgs.selectTillMatch = "select_on"
+args.wrapAround = true
+args.offset = "start"
+args.register = "search"
+
+[[bind.args.commands]]
+command = "master-key.setFlag"
+args = { name = "searchingbackwards_on", value = false }
+
+[[bind.args.commands]]
+command = "master-key.replayFromStack"
+
+[[bind]]
+path = "motion.search"
+key = "shift+/"
+name = "search ←"
+description = "search backwards"
+combinedName = "search → (←)"
+command = "runCommands"
+
+[[bind.args.commands]]
+command = "master-key.search"
+args.caseSensitive = true
+computedArgs.selectTillMatch = "select_on"
+args.wrapAround = true
+args.offset = "start"
+args.register = "search"
+args.backwards = true
+
+[[bind.args.commands]]
+command = "master-key.setFlag"
+args = { name = "searchingbackwards_on", value = true }
+
+[[bind.args.commands]]
+command = "master-key.replayFromStack"
+
+[[bind]]
+path = "motion.search"
+foreach.key = ["n", ";"]
+key = "{key}"
+combinedName = "→ search"
+combinedKey = "n/;"
+combinedDescription = "go to the next match of the search query"
+name = "→ search"
+description = "go to the next match of the search query"
+command = "runCommands"
+args.commands = [
+      { command = "master-key.nextMatch", args = { register = "search" }, computedArgs = { repeat = "(count || 1)-1" }},
+      "master-key.replayFromStack",
+]
+
+[[bind]]
+path = "motion.search"
+foreach.key = ["shift+n", ","]
+key = "{key}"
+name = "← search"
+description = "go to the previous match of the search query"
+combinedName = "← search"
+combinedDescription = "go to the previous match of the search query"
+combinedKey = "shift+n/,"
+command = "runCommands"
+args.commands = [
+      { command = "master-key.previousMatch", args = { register = "search" }, computedArgs = { repeat = "(count || 1)-1" }},
+      "master-key.replayFromStack",
+]
+
+#- ==============================================================
+# ### Text Objects
+#- ==============================================================
+# Text objects can be used in combination with targeted actions, but cannot be used directly for navigation in normal mode.
+
+[[path]]
+id = "motion.obj"
+name = "Text Objects"
+description = "These can only be used as object for targeted commands, they cannot be used as independent motions."
+default.command = "runCommands"
+default.mode = ["visual", "awaitingMotion"]
+
+
+[[bind]]
+path = "motion.obj"
+key = "i w"
+name = "in subword"
+description = "in subword "
+args.commands = [
+      { command = "selection-utilities.moveBy", args = {selectWhole = true, boundary = "end", unit = "subword"}, computedArgs.value = "count || 1" },
+      { command = "master-key.replayFromStack" }
+]
+
+[[bind]]
+path = "motion.obj"
+key = "a w"
+name = "in word"
+description = "in word"
+args.commands = [
+      { command = "selection-utilities.moveBy", args = {selectWhole = true, boundary = "end", unit = "word"}, computedArgs.value = "count || 1" },
+      { command = "master-key.replayFromStack" }
+]
+
+[[bind]]
+path = "motion.obj"
+key = "i p"
+name = "in paragraph"
+description = "in paragraph"
+args.commands = [
+      { command = "selection-utilities.moveBy", args = {selectWhole = true, boundary = "both", unit = "paragraph"}, computedArgs.value = "count || 1" },
+      { command = "master-key.replayFromStack" }
+]
+
+[[bind]]
+path = "motion.obj"
+key = "a p"
+name = "around paragraph"
+description = "around paragraph"
+args.commands = [
+      { command = "selection-utilities.moveBy", args = {selectWhole = true, boundary = "start", unit = "paragraph"}, computedArgs.value = "count || 1" },
+      { command = "master-key.replayFromStack" }
+]
+
+[[bind]]
+foreach.key = ["'", "shift+'"]
+path = "motion.obj"
+key = "i {key}"
+name = "in quotes"
+description = "in quotes"
+args.commands = [
+      { command = "bracketeer.selectQuotesContent" },
+      { command = "master-key.replayFromStack" }
+]
+
+[[bind]]
+path = "motion.obj"
+key = "a '"
+name = "around quotes"
+description = "in quotes"
+args.commands = [
+      { command = "bracketeer.selectQuotesContent" },
+      { command = "bracketeer.selectQuotesContent" },
+      { command = "master-key.replayFromStack" }
+]
+
+[[bind]]
+path = "motion.obj"
+key = "i b"
+name = "in brackets"
+description = "in brackets"
+args.commands = [
+      { command = "selection-utilities.expandWithinBrackets" },
+      { command = "master-key.replayFromStack" }
+]
+
+[[bind]]
+path = "motion.obj"
+key = "a b"
+name = "around brackets"
+description = "around brackets"
+args.commands = [
+      { command = "selection-utilities.expandAroundBrackets" },
+      { command = "master-key.replayFromStack" }
+]
+
+#- ==============================================================
+# ## Window Management
+#- ==============================================================
+[[path]]
+id = "window"
+name = "Window Manipulation"
+description = "Commands for navigating and manipulating the window/editor panes in some way"
+default.kind = "util"
+default.mode = "normal"
+when = "editorTextFocus && !findWidgetVisible"
+
+[[bind]]
+path = "window"
+name = "scroll ↓"
+description = "scroll down one line"
+key = "ctrl+e"
+combinedName = "scroll ↓/↑"
+combinedKey = "ctrl+e/ctrl+y"
+combinedDescription = "scroll down/up one line (without moving cursor)"
+command = "editorScroll"
+args.to = "down"
+args.by = "line"
+computedArgs.value = "count || 1"
+
+[[bind]]
+path = "window"
+name = "scroll ↑"
+description = "scroll up one line"
+key = "ctrl+y"
+combinedName = "scroll ↓/↑"
+combinedKey = "ctrl+e/ctrl+y"
+combinedDescription = "scroll down/up one line (without moving cursor)"
+command = "editorScroll"
+args.to = "up"
+args.by = "line"
+computedArgs.value = "count || 1"
+
+[[bind]]
+path = "window"
+name = "scroll ↓ 1/2pg"
+description = "scroll down half page"
+key = "ctrl+d"
+combinedName = "scroll 1/2pg ↓/↑"
+combinedKey = "ctrl+d/ctrl+u"
+combinedDescription = "scroll down/up one half page (without moving cursor)"
+command = "editorScroll"
+args.to = "down"
+args.by = "halfPage"
+args.revealCursor = true
+computedArgs.value = "count || 1"
+
+[[bind]]
+path = "window"
+name = "scroll ↑ 1/2pg"
+description = "scroll up half page"
+key = "ctrl+u"
+combinedName = "scroll 1/2pg ↓/↑"
+combinedKey = "ctrl+d/ctrl+u"
+combinedDescription = "scroll down/up one half page (without moving cursor)"
+command = "editorScroll"
+args.to = "up"
+args.by = "halfPage"
+args.revealCursor = true
+computedArgs.value = "count || 1"
+
+[[bind]]
+path = "window"
+name = "scroll ↓ pg"
+description = "scroll down one page"
+key = "ctrl+f"
+combinedName = "scroll pg ↓/↑"
+combinedKey = "ctrl+f/ctrl+b"
+combinedDescription = "scroll down/up one page (without moving cursor)"
+command = "editorScroll"
+args.to = "down"
+args.by = "page"
+args.revealCursor = true
+computedArgs.value = "count || 1"
+
+[[bind]]
+path = "window"
+name = "scroll ↑ pg"
+description = "scroll up one page"
+key = "ctrl+b"
+combinedName = "scroll pg ↓/↑"
+combinedKey = "ctrl+f/ctrl+b"
+combinedDescription = "scroll down/up one page (without moving cursor)"
+command = "editorScroll"
+args.to = "up"
+args.by = "page"
+args.revealCursor = true
+computedArgs.value = "count || 1"
+
+[[bind]]
+path = "window"
+name = "curs win bottom"
+description = "move cursor to bottom of viewport"
+key = "shift+l"
+command = "cursorMove"
+args.to = "viewPortBottom"
+args.by = "line"
+
+[[bind]]
+path = "window"
+name = "curs win top"
+description = "move cursor to center of viewport"
+key = "shift+m"
+command = "cursorMove"
+args.to = "viewPortCenter"
+args.by = "line"
+
+[[bind]]
+path = "window"
+name = "curs win top"
+description = "move cursor to top of viewport"
+key = "shift+h"
+command = "cursorMove"
+args.to = "viewPortTop"
+args.by = "line"
+
+[[bind]]
+path = "window"
+name = "curs win cen"
+description = "center window so that primary cursor is at the center"
+key = "z z"
+command = "selection-utilities.revealActive"
+args.at = "center"
+
+[[bind]]
+path = "window"
+name = "curs. win bot"
+description = "center window so that primary cursor is at the bottom"
+key = "z b"
+command = "selection-utilities.revealActive"
+args.at = "bottom"
+
+[[bind]]
+path = "window"
+name = "win top"
+description = "center window so that primary cursor is at the top"
+key = "z t"
+command = "selection-utilities.revealActive"
+args.at = "top"
+
+[[bind]]
+path = "window"
+key = "ctrl+w"
+hideInDocs = true
+command = "master-key.prefix"
+
+[[bind]]
+path = "window"
+key = "ctrl+w s"
+name = "split horiz"
+description = "split window horizontally"
+combinedName = "split horiz/vert"
+combinedKey = "s/v"
+combinedDescription = "split window horizontally/vertically"
+command = "workbench.action.splitEditorDown"
+
+[[bind]]
+path = "window"
+key = "ctrl+w v"
+name = "split vert"
+description = "split window virtically"
+combinedName = "split horiz/vert"
+combinedKey = "s/v"
+combinedDescription = "split window horizontally/vertically"
+command = "workbench.action.splitEditorRight"
+
+[[bind]]
+path = "window"
+name = "next window"
+combinedName = "next/previous window"
+description = "move to next window"
+combinedDescription = "move to next/prev window"
+key = "ctrl+w w"
+command = "workbench.action.focusNextGroup"
+
+[[bind]]
+path = "window"
+name = "close pane"
+description = "close the given group of editors"
+key = "ctrl+w q"
+command = "workbench.action.closeEditorsInGroup"
+
+[[bind]]
+path = "window"
+name = "equal"
+description = "equalize size of all windows"
+key = "ctrl+w ="
+command = "workbench.action.evenEditorWidths"
+
+[[bind]]
+path = "window"
+name = "tab →"
+description = "go forward in tabs"
+combinedName = "tab →/←"
+combinedDescription = "go back/forward in tabs"
+combinedKey = "t/shift+t"
+key = "g t"
+command = "workbench.action.nextEditor"
+
+[[bind]]
+path = "window"
+name = "tab →"
+description = "go back in tabs"
+key = "g shift+t"
+combinedName = "tab →/←"
+combinedDescription = "go back/forward in tabs"
+combinedKey = "t/shift+t"
+command = "workbench.action.previousEditor"
+
+[[bind]]
+path = "window"
+name = "close & save"
+description = "close current tab and save"
+key = "shift+z shift+z"
+command = "runCommands"
+args.commands = [
+      "workbench.action.files.save",
+      "workbench.action.closeActiveEditor"
+]
+
+#- ==============================================================
+# ## History
+#- ==============================================================
+[[path]]
+id = "history"
+name = "History Commands"
+description = "Commands that interact with edit or cursor history."
+when = "editorTextFocus"
+default.mode = "normal"
+
+[[bind]]
+path = "history"
+name = "undo"
+key = "u"
+command = "undo"
+
+[[bind]]
+path = "history"
+name = "redo"
+foreach.key = ["shift+u", "ctrl+r"]
+combinedName = "redo"
+combinedKey = "shift+u/ctrl+r"
+key = "{key}"
+command = "redo"
+
+[[bind]]
+path = "history"
+name = "repeat action"
+description = """
+Repeat the last action + motion command 
+"""
+key = "."
+command = "runCommands"
+repeat = "count"
+
+[[bind.args.commands]]
+command = "master-key.replayFromHistory"
+#- Use cases tested for
+#- d w 
+#- 2 d w 
+#- d 2 w 
+#- shift+a , escape 
+args.range.from = """
+((commandHistory[i].path.startsWith('count') || commandHistory[i].path.startsWith('action')) && commandHistory[i-1].path.startsWith('motion'))
+"""
+args.range.to= """
+(commandHistory[i].path.startsWith('core') || commandHistory[i].path.startsWith('motion')) && (commandHistory[i-1].path.startsWith('action') || commandHistory[i-1].path.startsWith('count'))
+"""
+
+[[bind.args.commands]]
+command = "master-key.enterNormal"
+
+#- ==============================================================
+# ## Utils
+#- ==============================================================
+[[path]]
+id = "util"
+name = "util"
+description = "Various things to do"
+default.mode = "normal"
+when = "editorTextFocus"
+
+[[bind]]
+path = "util"
+key = "shift+k"
+name = "manpage"
+description = "open manpage of term under cursor"
+command = "manpages.openFromCursor"
+
+[[bind]]
+path = "util"
+name = "reload bindings"
+key = "m m"
+description = "reload keybindings"
+command = "master-key.activateCurrent"
+when = "editorTextFocus"
+mode = ["normal"]
+
+#- ==============================================================
+#- End
+#- ==============================================================
