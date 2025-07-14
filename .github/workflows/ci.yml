@@ -7,45 +7,67 @@ on:
             - v[0-9]+.[0-9]+.[0-9]+*
     pull_request:
         types: ['opened', 'edited', 'reopened', 'synchronize', 'ready_for_review']
-    workflow_dispatch:
-        inputs:
-            node_version:
-                description: 'Node.js version'
-                required: true
-                default: '20'
-                type: choice
-                options:
-                    - 18
-                    - 20
 
 jobs:
-    build:
+    tests:
+        name: Tests
+        timeout-minutes: 60
         if: '! github.event.pull_request.draft'
         strategy:
-            matrix:
-                os: [ubuntu-latest]
-        runs-on: ${{ matrix.os }}
-
+            matrix: { environment: ['-web', ''] }
+        runs-on: macos-latest
         steps:
-            - uses: actions/checkout@v4
-            - name: Use Node.js
-              uses: actions/setup-node@v4
-              with:
-                  node-version: ${{ inputs.node_version || 20 }}
-            - name: Install Dependencies
-              run: npm ci
-              env:
-                  DETECT_CHROMEDRIVER_VERSION: true
-            - name: Run Tests
-              uses: coactions/setup-xvfb@v1
-              with:
-                  run: npm run ci
-            - name: Upload coverage to Codecov
-              uses: codecov/codecov-action@v4
-              with:
-                    token: ${{ secrets.CODECOV_TOKEN }}
-        #   - uses: actions/upload-artifact@v3
-        #     if: failure()
-        #     with:
-        #       name: screenshots
-        #       path: test/screenshots
+        - name: Checkout
+          uses: actions/checkout@v4
+        - name: Install Dev Environment
+          uses: jdx/mise-action@v2
+          with:
+            version: 2025.6.4
+            install: true
+            cache: true
+        - name: Prepare Cache
+          run: |
+            mkdir -p $(pnpm store path)
+            mkdir -p $HOME/Library/Caches
+            mkdir -p ${{ github.workspace }}/.vscode-test${{ matrix.environment }}
+            echo "PNPM_STORE_PATH=$(pnpm store path)" >> $GITHUB_ENV
+            echo "Created cachedir $HOME/Library/Caches"
+        - name: Cache
+          uses: actions/cache@v4
+          with:
+            key: mise${{ matrix.environment }}-${{ hashFiles('{0}/vscode-master-key/mise.toml {0}/vscode-master-key/pnpm-lock.yaml', github.workspace) }}
+            path: |
+                ${{ github.workspace }}/.vscode-test${{ matrix.environment }}
+                ${{ env.PNPM_STORE_PATH }}
+                $HOME/Library/Caches
+        - name: Install Dependencies
+          run: pnpm install --frozen-lockfile && pnpm exec playwright install chromium
+        - name: Unit Tests
+          env: { COVERAGE: 'true' }
+          run: mise test${{ matrix.environment }}
+        - name: Integration Tests
+          if: matrix.environment == ''
+          env: { COVERAGE: 'true' }
+          run: mise run test-integration
+        - uses: actions/upload-artifact@v4
+          name: Upload Integration Logs
+          if: ${{ !cancelled() && matrix.environment == ''}}
+          with:
+              name: test-results
+              path: test-results/
+              retention-days: 7
+        - uses: actions/upload-artifact@v4
+          name: Upload Integration Report
+          if: ${{ !cancelled() && matrix.environment == ''}}
+          with:
+              name: playwright-report
+              path: playwright-report/
+              retention-days: 7
+        - name: Assemble Coverage Results
+          if: matrix.environment == ''
+          run: mise assemble-coverage
+        - name: Upload coverage to Codecov
+          if: matrix.environment == ''
+          uses: codecov/codecov-action@v4
+          with:
+            token: ${{ secrets.CODECOV_TOKEN }}

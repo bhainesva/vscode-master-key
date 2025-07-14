@@ -5,25 +5,48 @@
 [![CI](https://github.com/haberdashPI/vscode-master-key/actions/workflows/ci.yml/badge.svg)](https://github.com/haberdashPI/vscode-master-key/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/haberdashPI/vscode-master-key/graph/badge.svg?token=099XZY1KR9)](https://codecov.io/gh/haberdashPI/vscode-master-key)
 [![Code Style: Google](https://img.shields.io/badge/code%20style-google-blueviolet.png)](https://github.com/google/gts)
+[![Docs](https://img.shields.io/badge/docs-stable-blue.png)](https://haberdashpi.github.io/vscode-master-key)
 
 Master key helps you to learn, create and use powerful keybindings in [VSCode](https://code.visualstudio.com/).
 
 If you want to improve your text editing super powers in VSCode, Master Key might just be the tool for you.
 
 > [!NOTE]
-> To power users: Master Key was envisioned as a set of tools to make it easy to create powerful keybinding specifications that match your editor style of choice (modal, chorded, etc...). There are currently some limitations, noted in [Keybinding Features](#keybinding-features) and [Customized Bindings](#customized-bindings) when creating custom binding sets.
+> To power users: Master Key was envisioned as a set of tools to make it easy to create powerful keybinding specifications that match your editor style of choice (modal, chorded, etc...). There are a few limitations, noted in [Keybinding Features](#keybinding-features) and [Customized Bindings](haberdashpi.github.io/vscode-master-key/guide.html#customizing-bindings).
 
-## To get started
+<!-- text between START_/STOP_ comments is extracted and inserted into the docs -->
+<!-- START_DOCS -->
+<!-- @file guide.md -->
+<!-- @order 1 -->
+
+## Getting Started
 
 The easiest way to get started is to activate the built-in keybindings that come with Master Key.
 
 1. Install this extension
-2. Run the command `Master Key: Activate Keybindings`
-3. Select the built-in binding set "Larkin"
+2. On windows only: restart VSCode — there is an [active investigation to avoid this workaround](https://github.com/haberdashPI/vscode-master-key/issues/51).
+3. Run the command `Master Key: Activate Keybindings`
+4. Select the built-in binding set "Larkin"
+
+<!-- STOP_DOCS -->
 
 You can revert these changes later using `Master Key: Deactivate Keybindings`.
 
-## Discoverability Features
+To learn more about how to use Master Key [read the documentation](haberdashpi.github.io/vscode-master-key).
+
+### Release Plans
+
+The most recent version of Master Key on VSCode's marketplace is 0.3.x, while the documentation and README are currently for the soon-to-be-released 0.4.0. (Refer to the tagged releases to see the older README). Because this newest version is somewhat disruptive (the keybinding file format has changed), the plan is to complete some important code refactoring work, which may necessitate a few additional changes to the file format, before the release of 0.4.0.
+
+## Feature Highlights
+
+Master key has quite of a few features, including:
+
+- **Keybinding Discoverability**: Bindings show up on a keyboard visualization. Binding files are literate TOML that is converted into markdown documentation. Multi-key sequences reveal a popup list of suggested keybinding completions (ala Kakaune / Helix / LazyVim).
+- **Record and repeat commands**: Record sequences of commands and parametrically select which ones to replay.
+- **Rich, parametric keybinding specification**: Modal bindings, simple `foreach` expressions, per-mode onType events, expression evaluation, cross-command state management
+
+## Feature Tour
 
 ### Visual documentation of keybindings
 
@@ -31,11 +54,11 @@ Learn and review your bindings on a keyboard layout:
 
 ![example of visual docs](images/readme/visualdoc.jpg)
 
-### Cheet sheet of keybindings
+### Cheat sheet of keybindings
 
-Review your bindings in a cheet sheet organized by theme:
+Review your bindings in a cheat sheet organized by theme:
 
-![example of cheet sheet](images/readme/cheatsheet.png)
+![example of cheat sheet](images/readme/cheatsheet.png)
 
 ### Keybinding hints
 
@@ -136,11 +159,11 @@ Express an entire series of bindings using the `foreach` field.
 ```toml
 [[bind]]
 path = "edit.count"
-foreach.num = ['{key: [0-9]}']
-name = "count {num}"
-key = "{num}"
+foreach.num = ['{{key: [0-9]}}']
+name = "count {{num}}"
+key = "{{num}}"
 command = "master-key.updateCount"
-args.value = "{num}"
+args.value = "{{num}}"
 ```
 
 ### Stateful Bindings
@@ -175,7 +198,7 @@ Master key records recent key presses, allowing you to create commands that quic
 [[bind]]
 key = ";"
 name = "repeat motion"
-repeat = "count"
+computedRepeat = "count"
 command = "master-key.replayFromHistory"
 args.at = "commandHistory[i].path.startsWith('edit.motion') && commandHistory[i].name != 'repeat motion'"
 ```
@@ -184,78 +207,18 @@ args.at = "commandHistory[i].path.startsWith('edit.motion') && commandHistory[i]
 
 Of course, just like all of the built-in bindings in Master Key, you can document your bindings so that they show up legibly within the discoverability features above. The toml file is a literate document used to generate the textual documentation and all binding's names will show up in the visual documentation as appropriate.
 
-## Customized Bindings
-
-Okay, so you want to customize your keybindings, or create a whole new preset?
-
-You can start by reviewing the built-in `Larkin` preset using the command `Master Key: Edit Preset Copy`. A new `*.toml` file with the contents of this master-key binding set will be opened. The file has comments throughout which document its use.
-
-> [!WARNING]
-> Because the error reporting for master keybinding files is not yet very precise, it is recommended that you edit bindings incrementally (e.g. by slowly creating new bindings or by slowly uncommenting an entire binding set you have imported). In this way you can ensure that the changes you've made can be properly activated by Mater Key. Long-term, better error reporting for these binding files will be available.
-
-To simply customize an existing preset, you can append additional bindings by activating user bindings: create a new toml file and enter the bindings you want to append. Then call `Master Key: Activate User Keybindings` on the toml file you just created. You can import existing user bindings, from `keyindings.json`, by calling `Master Key: Import User Keybindings`.
-
-> [!NOTE]
-> Normal VSCode user keybindings always take precedence over master keybindings. (It would be rude to have Master Key automatically insert bindings with higher priority than user specified customizations). Make sure you delete any user keybindings from your `keybindings.json` file after importing them into your master keybindings `.toml` file.
-
-Alternatively you can define your own preset and import bindings from those you've already created in VSCode. Create a preset copy by calling `Master Key: Edit Preset Copy` and then you may want to call `Master Key: Import Default Keybindings` to add any existing bindings you have to your preset copy. Edit the bindings as desired and update your settings to use them by calling `Master Key: Activate Keybindings` at any time.
-
-## Roadmap
-
-- Release 0.1.0: relatively stable default keybindings
-- Release 0.1.x: improved coverage/testing/stability of existing features
-- Release 0.2.0: missing visual documentation features: markdown summary of bindings
-- Release 0.2.x: improved performance/coverage/stability
-- Initial publish to VSCode here: 0.3.0
-- 0.3.x: improved code coverage, stability improvements
-- Release 0.4.x: documentation of all keybinding commands. May introduce breaking changes to improve API clarity for these bindings.
-- Release 0.4.y: more precise binding error report: use VSCode language server features to
-  get detailed line and character error indicators for binding-file problems
-- Release 0.4.z: source code documentation — may involve substantial refactor to improve legibility / clarity of code
-- Release 1.0.0:
-    - code should be legible
-    - test coverage should be satisfactory
-    - documentation should be largely complete
-- Release 1.x: upwards and onwards...
-  - support for more keyboard layouts for visual docs
-  - search: `showCount` displays movement count overlaid with each highlight
-  - additional keybinding sets: e.g. vim, emacs
-  - API improvements for new editor sets
-  - keybinding debug QOL features: show the binding that was run for a given key sequence
-  - clipboard registers
-
-## Related Work
-
-Master Key follows in the footsteps of many other extensions:
-
-- [VSCodeVim](https://github.com/VSCodeVim/Vim)
-- [vscode-neovim](https://github.com/asvetliakov/vscode-neovim)
-- [Awesome Emacs Keymap](https://github.com/whitphx/vscode-emacs-mcx)
-- [Dance](https://github.com/71/dance)
-- [ModalEdit](https://github.com/johtela/vscode-modaledit)
-- [ModalKeys](https://github.com/haberdashPI/vscode-modal-keys)
-
-And of course, there are many existing editors that Master Key draws inspiration from:
-
-- [vim](https://www.vim.org/)
-- [emacs](https://www.gnu.org/software/emacs/)
-- [kakoune](https://github.com/mawww/kakoune)
-- [helix](https://helix-editor.com/)
-
 ## Developer Notes
 
-This repository was designed to be worked with in unix-like environments. No effort to support development on Windows has been made. The setup relies on a working version of `nvm` installed in bash and an npm version matching the version specified in `.nvmrc`. You can satisfy this requirement by copying and running the following in bash.
+This repository was designed to be worked with in unix-like environments. No effort to support development on Windows has been made. The setup relies on a working version of `mise` installed. You can satisfy this requirement by copying and running the following in bash.
 
 ```sh
-curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.5/install.sh | bash # install nvm
-export NVM_DIR="$([ -z "${XDG_CONFIG_HOME-}" ] && printf %s "${HOME}/.nvm" || printf %s "${XDG_CONFIG_HOME}/nvm")"
-[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" # load nvm
-nvm install # install npm version found in `.nvmrc`
+curl https://mise.run | sh
 ```
 
 You can then install all dependencies for this project as follows:
 
 ```sh
-nvm use
+mise activate
+mise install
 npm ic
 ```
