@@ -485,7 +485,8 @@ command = "runCommands"
 args.commands = [
       "expandLineSelection",
       "selection-utilities.trimSelectionWhitespace",
-      "master-key.replayFromStack",
+      {command = "master-key.executeStoredCommand", args = {register = "pending-action"}},
+      {command = "master-key.storeCommand", args = {command = "master-key.ignore", register = "pending-action"}},
 ]
 mode = ["awaitingMotion"]
 
@@ -696,14 +697,13 @@ command = "master-key.setMode"
 args = { value = "awaitingMotion" }
 
 [[bind.args.commands]]
-command = "master-key.pushHistoryToStack"
-args.value = [
-      { do = [
-            { command = "editor.action.transformToLowercase" },
-            { command = "master-key.enterNormal" },
-            { command = "master-key.pushHistoryToStack", args.value = []},
-            { command = "master-key.setFlag", args = {name = "select_on", value = false}},
-      ] }
+command = "master-key.storeCommand"
+args.command = "runCommands"
+args.register = "pending-action"
+args.args.commands = [
+      { command = "editor.action.transformToLowercase" },
+      { command = "master-key.enterNormal" },
+      { command = "master-key.setFlag", args = {name = "select_on", value = false}},
 ]
 
 [[bind]]
@@ -727,14 +727,13 @@ command = "master-key.setMode"
 args = { value = "awaitingMotion" }
 
 [[bind.args.commands]]
-command = "master-key.pushHistoryToStack"
-args.value = [
-      { do = [
-            { command = "editor.action.transformToUppercase" },
-            { command = "master-key.enterNormal" },
-            { command = "master-key.pushHistoryToStack", args.value = []},
-            { command = "master-key.setFlag", args = {name = "select_on", value = false}},
-      ] }
+command = "master-key.storeCommand"
+args.command = "runCommands"
+args.register = "pending-action"
+args.args.commands = [
+      { command = "editor.action.transformToUppercase" },
+      { command = "master-key.enterNormal" },
+      { command = "master-key.setFlag", args = {name = "select_on", value = false}},
 ]
 
 [[bind]]
@@ -761,12 +760,13 @@ command = "master-key.setMode"
 args = { value = "awaitingMotion" }
 
 [[bind.args.commands]]
-command = "master-key.pushHistoryToStack"
-args.value = [
+command = "master-key.storeCommand"
+args.command = "runCommands"
+args.register = "pending-action"
+args.args.commands = [
       { do = [
             { command = "editor.action.clipboardCopyAction" },
             { defined = "resetSelection" },
-            { command = "master-key.pushHistoryToStack", args.value = []},
             { command = "master-key.setFlag", args = {name = "select_on", value = false}},
             { command = "master-key.setFlag", args = {name = "yanking_on", value = false}},
       ] }
@@ -783,7 +783,8 @@ name = "yank line"
 description = "yank line (only if awaitingMotion mode was initialized with `y`, essentially `y y`)"
 command = "runCommands"
 whenComputed = "master-key.yanking_on"
-args.commands = ["editor.action.clipboardCopyAction", "master-key.enterNormal", "master-key.replayFromStack"]
+args.commands = ["editor.action.clipboardCopyAction", "master-key.enterNormal", {command = "master-key.executeStoredCommand", args = {register = "pending-action"}},
+      {command = "master-key.storeCommand", args = {command = "master-key.ignore", register = "pending-action"}}]
 mode = ["awaitingMotion"]
 
 [[bind]]
@@ -809,14 +810,13 @@ command = "master-key.setMode"
 args = { value = "awaitingMotion" }
 
 [[bind.args.commands]]
-command = "master-key.pushHistoryToStack"
-args.value = [
-      { do = [
-            { command = "editor.action.clipboardCutAction" },
-            { command = "master-key.enterNormal" },
-            { command = "master-key.pushHistoryToStack", args.value = []},
-            { command = "master-key.setFlag", args = {name = "select_on", value = false}},
-      ] }
+command = "master-key.storeCommand"
+args.command = "runCommands"
+args.register = "pending-action"
+args.args.commands = [
+      { command = "editor.action.clipboardCutAction" },
+      { command = "master-key.enterNormal" },
+      { command = "master-key.setFlag", args = {name = "select_on", value = false}},
 ]
 
 [[bind]]
@@ -833,7 +833,7 @@ args.commands = [
       {command = "master-key.enterNormal"},
       {command = "master-key.setFlag",args = {name = "select_on", value = false}}, 
       {command = "master-key.setFlag",args = {name = "deleting_on", value = false}}, 
-      {command = "master-key.pushHistoryToStack", args = {value = []}},
+      {command = "master-key.storeCommand", args = {command = "master-key.ignore", register = "pending-action"}},
 ]
 
 [[bind]]
@@ -858,15 +858,14 @@ command = "master-key.setMode"
 args = { value = "awaitingMotion" }
 
 [[bind.args.commands]]
-command = "master-key.pushHistoryToStack"
-args.value = [
-      { do = [
-            { command = "editor.action.clipboardCutAction" },
-            { command = "master-key.enterInsert" },
-            { command = "master-key.pushHistoryToStack", args.value = []},
-            { command = "master-key.setFlag", args = {name = "select_on", value = false}},
-            { command = "master-key.setFlag", args = {name = "changing_on", value = false}},
-      ] }
+command = "master-key.storeCommand"
+args.command = "runCommands"
+args.register = "pending-action"
+args.args.commands = [
+      { command = "editor.action.clipboardCutAction" },
+      { command = "master-key.enterInsert" },
+      { command = "master-key.setFlag", args = {name = "select_on", value = false}},
+      { command = "master-key.setFlag", args = {name = "changing_on", value = false}},
 ]
 
 [[bind]]
@@ -892,19 +891,18 @@ command = "master-key.setMode"
 args = { value = "awaitingMotion" }
 
 [[bind.args.commands]]
-command = "master-key.pushHistoryToStack"
-args.value = [
-      { do = [
-            { command = "editor.action.indentLines" },
-            { command = "selection-utilities.exchangeAnchorActive" },
-            { command = "selection-utilities.shrinkToActive" },
-            #- defined doesn't seem to work in this context
-            #- { defined = "resetSelection" },
-            { command = "master-key.enterNormal" },
-            { command = "master-key.pushHistoryToStack", args.value = []},
-            { command = "master-key.setFlag", args = {name = "select_on", value = false}},
-            { command = "master-key.setFlag", args = {name = "indenting_on", value = false}},
-      ] }
+command = "master-key.storeCommand"
+args.command = "runCommands"
+args.register = "pending-action"
+args.args.commands = [
+      { command = "editor.action.indentLines" },
+      { command = "selection-utilities.exchangeAnchorActive" },
+      { command = "selection-utilities.shrinkToActive" },
+      #- defined doesn't seem to work in this context
+      #- { defined = "resetSelection" },
+      { command = "master-key.enterNormal" },
+      { command = "master-key.setFlag", args = {name = "select_on", value = false}},
+      { command = "master-key.setFlag", args = {name = "indenting_on", value = false}},
 ]
 
 [[bind]]
@@ -920,7 +918,8 @@ when = "master-key.count >= 1"
 command = "runCommands"
 args.commands = [
       { defined = "selectLinesDown" },
-      "master-key.replayFromStack",
+      {command = "master-key.executeStoredCommand", args = {register = "pending-action"}},
+      {command = "master-key.storeCommand", args = {command = "master-key.ignore", register = "pending-action"}},
 ]
 
 [[bind]]
@@ -930,8 +929,12 @@ name = "indent"
 mode = "awaitingMotion"
 whenComputed = "indenting_on"
 when = "master-key.count < 1"
-description = "indent current line (only if awaitingMotion mode was initialized with `shift+.`, essentially `shift+. shift+.`)"
-command = "master-key.replayFromStack"
+description = "indent current line (if awaitingMotion mode was initialized with `shift+.`, essentially `shift+. shift+.`)"
+command = "runCommands"
+args.commands = [
+      {command = "master-key.executeStoredCommand", args = {register = "pending-action"}},
+      {command = "master-key.storeCommand", args = {command = "master-key.ignore", register = "pending-action"}},
+]
 
 [[bind]]
 defaults = "action.targeted"
@@ -956,17 +959,16 @@ command = "master-key.setMode"
 args = { value = "awaitingMotion" }
 
 [[bind.args.commands]]
-command = "master-key.pushHistoryToStack"
-args.value = [
-      { do = [
-            { command = "editor.action.outdentLines" },
-            { command = "selection-utilities.exchangeAnchorActive" },
-            { command = "selection-utilities.shrinkToActive" },
-            { command = "master-key.enterNormal" },
-            { command = "master-key.setFlag", args = {name = "select_on", value = false}},
-            { command = "master-key.setFlag", args = {name = "outdenting_on", value = false}},
-            { command = "master-key.pushHistoryToStack", args.value = []},
-      ] }
+command = "master-key.storeCommand"
+args.command = "runCommands"
+args.register = "pending-action"
+args.args.commands = [
+      { command = "editor.action.outdentLines" },
+      { command = "selection-utilities.exchangeAnchorActive" },
+      { command = "selection-utilities.shrinkToActive" },
+      { command = "master-key.enterNormal" },
+      { command = "master-key.setFlag", args = {name = "select_on", value = false}},
+      { command = "master-key.setFlag", args = {name = "outdenting_on", value = false}},
 ]
 
 [[bind]]
@@ -980,7 +982,8 @@ description = "outdent current line (only if awaitingMotion mode was initialized
 command = "runCommands"
 args.commands = [
       { defined = "selectLinesDown" },
-      "master-key.replayFromStack",
+      {command = "master-key.executeStoredCommand", args = {register = "pending-action"}},
+      {command = "master-key.storeCommand", args = {command = "master-key.ignore", register = "pending-action"}},
 ]
 
 [[bind]]
@@ -991,7 +994,11 @@ whenComputed = "outdenting_on"
 mode = "awaitingMotion"
 when = "master-key.count < 1"
 description = "outdent lines"
-command = "master-key.replayFromStack"
+command = "runCommands"
+args.commands = [
+      {command = "master-key.executeStoredCommand", args = {register = "pending-action"}},
+      {command = "master-key.storeCommand", args = {command = "master-key.ignore", register = "pending-action"}},
+]
 
 
 #- ==============================================================
@@ -1021,7 +1028,8 @@ combinedDescription = "move left/right"
 description = "move left"
 args.commands = [
       { command = "cursorMove", args = { to = "left" }, computedArgs = {value = "count", select = "select_on" }},
-      "master-key.replayFromStack"
+      {command = "master-key.executeStoredCommand", args = {register = "pending-action"}},
+      {command = "master-key.storeCommand", args = {command = "master-key.ignore", register = "pending-action"}},
 ]
 
 [[bind]]
@@ -1034,7 +1042,8 @@ combinedDescription = "move left/right"
 description = "move right"
 args.commands = [
       { command = "cursorMove", args = { to = "right" }, computedArgs = {value = "count", select = "select_on" }},
-      "master-key.replayFromStack"
+{command = "master-key.executeStoredCommand", args = {register = "pending-action"}},
+      {command = "master-key.storeCommand", args = {command = "master-key.ignore", register = "pending-action"}},
 ]
 
 [[bind]]
@@ -1047,7 +1056,8 @@ combinedDescription = "move down/up"
 description = "move down"
 args.commands = [
       { command = "cursorMove", args = { to = "down", by = "line" }, computedArgs = {value = "count", select = "select_on" }},
-      "master-key.replayFromStack"
+{command = "master-key.executeStoredCommand", args = {register = "pending-action"}},
+      {command = "master-key.storeCommand", args = {command = "master-key.ignore", register = "pending-action"}},
 ]
 
 [[bind]]
@@ -1058,7 +1068,8 @@ description = "move up"
 combinedName = "↓/↑"
 args.commands = [
       { command = "cursorMove", args = { to = "up", by = "line" }, computedArgs = {value = "count", select = "select_on" }},
-      "master-key.replayFromStack"
+   {command = "master-key.executeStoredCommand", args = {register = "pending-action"}},
+      {command = "master-key.storeCommand", args = {command = "master-key.ignore", register = "pending-action"}},
 ]
 
 [[bind]]
@@ -1078,7 +1089,8 @@ combinedDescription = "move down/up"
 description = "move down"
 args.commands = [
       { command = "cursorMove", args = { to = "down", by = "wrappedLine" }, computedArgs = {value = "count", select = "select_on" }},
-      "master-key.replayFromStack"
+{command = "master-key.executeStoredCommand", args = {register = "pending-action"}},
+      {command = "master-key.storeCommand", args = {command = "master-key.ignore", register = "pending-action"}},
 ]
 
 [[bind]]
@@ -1089,7 +1101,8 @@ description = "move up"
 combinedName = "wrapped ↓/↑"
 args.commands = [
       { command = "cursorMove", args = { to = "up", by = "wrappedLine" }, computedArgs = {value = "count", select = "select_on" }},
-      "master-key.replayFromStack"
+{command = "master-key.executeStoredCommand", args = {register = "pending-action"}},
+      {command = "master-key.storeCommand", args = {command = "master-key.ignore", register = "pending-action"}},
 ]
 
 [[bind]]
@@ -1105,7 +1118,8 @@ args.commands = [
       #- there's not a 'combinedModes' option
       { whenComputed = "mode === 'normal'", command = "cursorBottom" },
       { whenComputed = "mode !== 'normal'", command = "cursorBottomSelect" },
-      "master-key.replayFromStack"
+{command = "master-key.executeStoredCommand", args = {register = "pending-action"}},
+      {command = "master-key.storeCommand", args = {command = "master-key.ignore", register = "pending-action"}},
 ]
 
 [[bind]]
@@ -1119,8 +1133,8 @@ args.commands = [
       #- there's not a 'combinedModes' option
       { whenComputed = "mode === 'normal'", command = "cursorTop" },
       { whenComputed = "mode !== 'normal'", command = "cursorTopSelect"},
-      "master-key.replayFromStack",
-]
+{command = "master-key.executeStoredCommand", args = {register = "pending-action"}},
+      {command = "master-key.storeCommand", args = {command = "master-key.ignore", register = "pending-action"}},]
 
 [[bind]]
 defaults = "motion.prim"
@@ -1136,7 +1150,13 @@ args = {unit = "paragraph"}
 computedArgs = {value = "(count || 1)", select = "select_on"}
 
 [[bind.args.commands]]
-command = "master-key.replayFromStack"
+command = "master-key.executeStoredCommand"
+args.register = "pending-action"
+
+[[bind.args.commands]]
+command = "master-key.storeCommand"
+args.register = "pending-action"
+args.command = "master-key.ignore"
 
 [[bind]]
 defaults = "motion.prim"
@@ -1153,7 +1173,13 @@ args = {unit = "paragraph"}
 computedArgs = {value = "-(count || 1)", select = "select_on"}
 
 [[bind.args.commands]]
-command = "master-key.replayFromStack"
+command = "master-key.executeStoredCommand"
+args.register = "pending-action"
+
+[[bind.args.commands]]
+command = "master-key.storeCommand"
+args.register = "pending-action"
+args.command = "master-key.ignore"
 
 [[bind]]
 defaults = "motion.prim"
@@ -1170,7 +1196,13 @@ args = {unit = "subword"}
 computedArgs = {value = "count || 1", select = "select_on"}
 
 [[bind.args.commands]]
-command = "master-key.replayFromStack"
+command = "master-key.executeStoredCommand"
+args.register = "pending-action"
+
+[[bind.args.commands]]
+command = "master-key.storeCommand"
+args.register = "pending-action"
+args.command = "master-key.ignore"
 
 [[bind]]
 defaults = "motion.prim"
@@ -1185,7 +1217,13 @@ args = {unit = "subword"}
 computedArgs = {value = "-count || -1", select = "select_on"}
 
 [[bind.args.commands]]
-command = "master-key.replayFromStack"
+command = "master-key.executeStoredCommand"
+args.register = "pending-action"
+
+[[bind.args.commands]]
+command = "master-key.storeCommand"
+args.register = "pending-action"
+args.command = "master-key.ignore"
 
 [[bind]]
 defaults = "motion.prim"
@@ -1202,7 +1240,13 @@ args = {unit = "word"}
 computedArgs = {value = "count || 1", select = "select_on"}
 
 [[bind.args.commands]]
-command = "master-key.replayFromStack"
+command = "master-key.executeStoredCommand"
+args.register = "pending-action"
+
+[[bind.args.commands]]
+command = "master-key.storeCommand"
+args.register = "pending-action"
+args.command = "master-key.ignore"
 
 [[bind]]
 defaults = "motion.prim"
@@ -1218,7 +1262,13 @@ args = {unit = "word"}
 computedArgs = {value = "-count || -1", select = "select_on"}
 
 [[bind.args.commands]]
-command = "master-key.replayFromStack"
+command = "master-key.executeStoredCommand"
+args.register = "pending-action"
+
+[[bind.args.commands]]
+command = "master-key.storeCommand"
+args.register = "pending-action"
+args.command = "master-key.ignore"
 
 [[bind]]
 defaults = "motion.prim"
@@ -1232,7 +1282,13 @@ args = {unit = "subword", boundary = "start"}
 computedArgs = {value = "count || 1", select = "select_on"}
 
 [[bind.args.commands]]
-command = "master-key.replayFromStack"
+command = "master-key.executeStoredCommand"
+args.register = "pending-action"
+
+[[bind.args.commands]]
+command = "master-key.storeCommand"
+args.register = "pending-action"
+args.command = "master-key.ignore"
 
 [[bind]]
 defaults = "motion.prim"
@@ -1246,7 +1302,13 @@ args = {unit = "word", boundary = "end"}
 computedArgs = {value = "count || 1", select = "select_on"}
 
 [[bind.args.commands]]
-command = "master-key.replayFromStack"
+command = "master-key.executeStoredCommand"
+args.register = "pending-action"
+
+[[bind.args.commands]]
+command = "master-key.storeCommand"
+args.register = "pending-action"
+args.command = "master-key.ignore"
 
 [[bind]]
 defaults = "motion.prim"
@@ -1290,7 +1352,8 @@ args.commands = [
       #- there's not a 'combinedModes' option
       {whenComputed = "mode === 'normal'", command = "cursorLineEnd"},
       {whenComputed = "mode !== 'normal'", command = "cursorLineEndSelect"},
-      {command = "master-key.replayFromStack"}
+{command = "master-key.executeStoredCommand", args = {register = "pending-action"}},
+      {command = "master-key.storeCommand", args = {command = "master-key.ignore", register = "pending-action"}},
 ]
 
 [[bind]]
@@ -1305,7 +1368,8 @@ args.commands = [
       #- there's not a 'combinedModes' option
       { whenComputed = "mode === 'normal'", command = "editor.action.jumpToBracket" },
       { whenComputed = "mode !== 'normal'", command = "selection-utilities.expandWithinBrackets" },
-      { whenComputed = "mode !== 'normal'", command = "master-key.replayFromStack" },
+      { whenComputed = "mode !== 'normal'", command = "master-key.executeStoredCommand", args = {register = "pending-action"}},
+      {whenComputed = "mode !== 'normal'", command = "master-key.storeCommand", args = {command = "master-key.ignore", register = "pending-action"}},
 ]
 
 #- ==============================================================
@@ -1342,7 +1406,13 @@ command = "master-key.setFlag"
 args = { name = "searchingbackwards_on", value = false }
 
 [[bind.args.commands]]
-command = "master-key.replayFromStack"
+command = "master-key.executeStoredCommand"
+args.register = "pending-action"
+
+[[bind.args.commands]]
+command = "master-key.storeCommand"
+args.register = "pending-action"
+args.command = "master-key.ignore"
 
 [[bind]]
 defaults = "motion.search"
@@ -1362,7 +1432,13 @@ command = "master-key.setFlag"
 args = { name = "searchingbackwards_on", value = true }
 
 [[bind.args.commands]]
-command = "master-key.replayFromStack"
+command = "master-key.executeStoredCommand"
+args.register = "pending-action"
+
+[[bind.args.commands]]
+command = "master-key.storeCommand"
+args.register = "pending-action"
+args.command = "master-key.ignore"
 
 [[bind]]
 defaults = "motion.search"
@@ -1387,7 +1463,13 @@ command = "master-key.setFlag"
 args = { name = "searchingbackwards_on", value = false }
 
 [[bind.args.commands]]
-command = "master-key.replayFromStack"
+command = "master-key.executeStoredCommand"
+args.register = "pending-action"
+
+[[bind.args.commands]]
+command = "master-key.storeCommand"
+args.register = "pending-action"
+args.command = "master-key.ignore"
 
 [[bind]]
 defaults = "motion.search"
@@ -1411,7 +1493,13 @@ command = "master-key.setFlag"
 args = { name = "searchingbackwards_on", value = true }
 
 [[bind.args.commands]]
-command = "master-key.replayFromStack"
+command = "master-key.executeStoredCommand"
+args.register = "pending-action"
+
+[[bind.args.commands]]
+command = "master-key.storeCommand"
+args.register = "pending-action"
+args.command = "master-key.ignore"
 
 [[bind]]
 defaults = "motion.search"
@@ -1437,7 +1525,13 @@ command = "master-key.setFlag"
 args = { name = "searchingbackwards_on", value = false }
 
 [[bind.args.commands]]
-command = "master-key.replayFromStack"
+command = "master-key.executeStoredCommand"
+args.register = "pending-action"
+
+[[bind.args.commands]]
+command = "master-key.storeCommand"
+args.register = "pending-action"
+args.command = "master-key.ignore"
 
 [[bind]]
 defaults = "motion.search"
@@ -1461,7 +1555,13 @@ command = "master-key.setFlag"
 args = { name = "searchingbackwards_on", value = true }
 
 [[bind.args.commands]]
-command = "master-key.replayFromStack"
+command = "master-key.executeStoredCommand"
+args.register = "pending-action"
+
+[[bind.args.commands]]
+command = "master-key.storeCommand"
+args.register = "pending-action"
+args.command = "master-key.ignore"
 
 [[bind]]
 defaults = "motion.search"
@@ -1475,7 +1575,8 @@ description = "go to the next match of the search query"
 command = "runCommands"
 args.commands = [
       { command = "master-key.nextMatch", args = { register = "search" }, computedArgs = { computedRepeat = "(count || 1)-1" }},
-      "master-key.replayFromStack",
+{command = "master-key.executeStoredCommand", args = {register = "pending-action"}},
+      {command = "master-key.storeCommand", args = {command = "master-key.ignore", register = "pending-action"}},
 ]
 
 [[bind]]
@@ -1490,7 +1591,8 @@ combinedKey = "shift+n/,"
 command = "runCommands"
 args.commands = [
       { command = "master-key.previousMatch", args = { register = "search" }, computedArgs = { computedRepeat = "(count || 1)-1" }},
-      "master-key.replayFromStack",
+{command = "master-key.executeStoredCommand", args = {register = "pending-action"}},
+      {command = "master-key.storeCommand", args = {command = "master-key.ignore", register = "pending-action"}},
 ]
 
 #- ==============================================================
@@ -1511,7 +1613,8 @@ name = "in subword"
 description = "in subword "
 args.commands = [
       { command = "selection-utilities.moveBy", args = {selectWhole = true, boundary = "end", unit = "subword"}, computedArgs.value = "count || 1" },
-      { command = "master-key.replayFromStack" }
+{command = "master-key.executeStoredCommand", args = {register = "pending-action"}},
+      {command = "master-key.storeCommand", args = {command = "master-key.ignore", register = "pending-action"}},
 ]
 
 [[bind]]
@@ -1521,7 +1624,8 @@ name = "in word"
 description = "in word"
 args.commands = [
       { command = "selection-utilities.moveBy", args = {selectWhole = true, boundary = "end", unit = "word"}, computedArgs.value = "count || 1" },
-      { command = "master-key.replayFromStack" }
+{command = "master-key.executeStoredCommand", args = {register = "pending-action"}},
+      {command = "master-key.storeCommand", args = {command = "master-key.ignore", register = "pending-action"}},
 ]
 
 [[bind]]
@@ -1531,7 +1635,8 @@ name = "in paragraph"
 description = "in paragraph"
 args.commands = [
       { command = "selection-utilities.moveBy", args = {selectWhole = true, boundary = "both", unit = "paragraph"}, computedArgs.value = "count || 1" },
-      { command = "master-key.replayFromStack" }
+{command = "master-key.executeStoredCommand", args = {register = "pending-action"}},
+      {command = "master-key.storeCommand", args = {command = "master-key.ignore", register = "pending-action"}},
 ]
 
 [[bind]]
@@ -1541,7 +1646,8 @@ name = "around paragraph"
 description = "around paragraph"
 args.commands = [
       { command = "selection-utilities.moveBy", args = {selectWhole = true, boundary = "start", unit = "paragraph"}, computedArgs.value = "count || 1" },
-      { command = "master-key.replayFromStack" }
+      {command = "master-key.executeStoredCommand", args = {register = "pending-action"}},
+      {command = "master-key.storeCommand", args = {command = "master-key.ignore", register = "pending-action"}},
 ]
 
 [[bind]]
@@ -1552,7 +1658,8 @@ name = "in quotes"
 description = "in quotes"
 args.commands = [
       { command = "bracketeer.selectQuotesContent" },
-      { command = "master-key.replayFromStack" }
+      {command = "master-key.executeStoredCommand", args = {register = "pending-action"}},
+      {command = "master-key.storeCommand", args = {command = "master-key.ignore", register = "pending-action"}},
 ]
 
 [[bind]]
@@ -1563,7 +1670,8 @@ description = "in quotes"
 args.commands = [
       { command = "bracketeer.selectQuotesContent" },
       { command = "bracketeer.selectQuotesContent" },
-      { command = "master-key.replayFromStack" }
+      {command = "master-key.executeStoredCommand", args = {register = "pending-action"}},
+      {command = "master-key.storeCommand", args = {command = "master-key.ignore", register = "pending-action"}},
 ]
 
 [[bind]]
@@ -1573,7 +1681,8 @@ name = "in brackets"
 description = "in brackets"
 args.commands = [
       { command = "selection-utilities.expandWithinBrackets" },
-      { command = "master-key.replayFromStack" }
+      {command = "master-key.executeStoredCommand", args = {register = "pending-action"}},
+      {command = "master-key.storeCommand", args = {command = "master-key.ignore", register = "pending-action"}},
 ]
 
 [[bind]]
@@ -1583,7 +1692,8 @@ name = "around brackets"
 description = "around brackets"
 args.commands = [
       { command = "selection-utilities.expandAroundBrackets" },
-      { command = "master-key.replayFromStack" }
+      {command = "master-key.executeStoredCommand", args = {register = "pending-action"}},
+      {command = "master-key.storeCommand", args = {command = "master-key.ignore", register = "pending-action"}},
 ]
 
 #- ==============================================================
