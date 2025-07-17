@@ -1,6 +1,6 @@
 [header]
 name = "Vim Key Bindings"
-version = "1.0"
+version = "2.0"
 
 #- TODO: uncomment later so I don't have to deal with the install
 #- dialog all the time
@@ -67,7 +67,7 @@ Actions do something with a specified text object (e.g. delete it).
 command = "selection-utilities.shrinkToActive"
 
 [[define.selectLinesDown]]
-if = "count"
+whenComputed = "count"
 command = "cursorMove"
 args = { to = "down", by = "wrappedLine", select = true }
 computedArgs = { value = "count - 1" }
@@ -82,21 +82,20 @@ command = "selection-utilities.shrinkToActive"
 # ## Core
 #- ==============================================================
 # These commands change modes.
-[[path]]
+[[default]]
 id = "core"
-name = "Core"
 default.kind = "util"
-when = "editorTextFocus"
+appendWhen = "editorTextFocus"
 
 #- in "command" like modes (e.g. normal), typing keys without a command defined below should have no effect
 [[bind]]
-path = "core"
+defaults = "core"
 name = "ignore"
 description = "this key does nothing"
-foreach.key = ['{key: .}', 'shift+{key: .}'] #- all keys whose bindings are described by a single character
-key = "{key}"
+foreach.key = ['{{key: .}}', 'shift+{{key: .}}'] #- all keys whose bindings are described by a single character
+key = "{{key}}"
 command = "master-key.ignore"
-prefixes = "<all-prefixes>"
+prefixes = "{{all_prefixes}}"
 mode = ["normal", "visual", "awaitingMotion"]
 when = "editorTextFocus"
 hideInDocs = true
@@ -104,12 +103,12 @@ hideInPalette = true
 priority = -10
 
 [[bind]]
-path = "core"
+defaults = "core"
 foreach.key = ["escape", "ctrl+[", "ctrl+c"]
 combinedKey = "escape/ctrl+[/ctrl+c"
 combinedName = "normal"
 combinedDescription = "enter normal mode"
-key = "{key}"
+key = "{{key}}"
 mode = ["insert", "visual", "awaitingMotion", "replace"]
 hideInPalette = true
 hideInDocs = false
@@ -121,23 +120,23 @@ args.commands = [
       { command = "master-key.pushHistoryToStack", args = { value = []}},
 ]
 when = "!findWidgetVisible"
-prefixes = "<all-prefixes>"
+prefixes = "{{all_prefixes}}"
 
 [[bind]]
-path = "core"
+defaults = "core"
 name = "normal"
 foreach.key = ["escape", "ctrl+[", "ctrl+c"]
-key = "{key}"
+key = "{{key}}"
 hideInPalette = true
 hideInDocs = true
 when = "suggestWidgetVisible && editorTextFocus && !findWidgetVisible"
 command = "runCommands"
 args.commands = ["hideSuggestWidget", "master-key.enterNormal"]
 mode = ["normal", "awaitingMotion"]
-prefixes = "<all-prefixes>"
+prefixes = "{{all_prefixes}}"
 
 [[bind]]
-path = "core"
+defaults = "core"
 name = "replace"
 description = "enter replace mode"
 key = "shift+r"
@@ -146,7 +145,7 @@ command = "master-key.setMode"
 args.value = "replace"
 
 [[bind]]
-path = "core"
+defaults = "core"
 key = "v"
 name = "visual mode"
 mode = "normal"
@@ -158,7 +157,7 @@ args.commands = [
 ]
 
 [[bind]]
-path = "core"
+defaults = "core"
 key = "shift+v"
 name = "visual mode"
 mode = ["normal", "visual"]
@@ -171,9 +170,9 @@ args.commands = [
 ]
 
 [[bind]]
-path = "core"
+defaults = "core"
 foreach.key = ["v"]
-key = "{key}"
+key = "{{key}}"
 name = "visual mode"
 mode = "visual"
 description = "exit visual mode"
@@ -185,7 +184,7 @@ args.commands = [
 ]
 
 [[bind]]
-path = "action.basic"
+defaults = "action.basic"
 key = "i"
 name = "insert"
 description = "switch to insert mode (right before character)"
@@ -194,7 +193,7 @@ args.commands = ["selection-utilities.shrinkToActive", "master-key.enterInsert"]
 mode = ["normal"]
 
 [[bind]]
-path = "action.basic"
+defaults = "action.basic"
 key = "a"
 name = "append"
 description = "switch to insert mode (right after character)"
@@ -207,7 +206,7 @@ args.commands = [
 ]
 
 [[bind]]
-path = "action.basic"
+defaults = "action.basic"
 key = "shift+i"
 name = "insert start"
 description = "move to beginning of line / selection and enter insert mode"
@@ -219,7 +218,7 @@ args.commands = [
 ]
 
 [[bind]]
-path = "action.basic"
+defaults = "action.basic"
 key = "shift+a"
 name = "insert end"
 description = "move to end of line / selection and enter insert mode"
@@ -236,24 +235,23 @@ args.commands = [
 # argument to that command. In most cases this causes the command to be repeated `count`
 # times e.g. 2w would move two words starting from the current cursor position.
 
-[[path]]
+[[default]]
 id = "count"
-name = "count" 
 
 [[bind]]
-path = "count"
+defaults = "count"
 kind = "count"
-foreach.num = ['{key: [1-9]}']
-name = "count {num}"
-key = "{num}"
+foreach.num = ['{{key: [1-9]}}']
+name = "count {{num}}"
+key = "{{num}}"
 command = "master-key.updateCount"
-description = "Add digit {num} to the count argument of a command"
+description = "Add digit {{num}} to the count argument of a command"
 combinedKey = "1-9"
 when = "editorTextFocus"
 combinedName = "count 1-9"
 combinedDescription = "Add digit 1-9 to count argument of a command"
-args.value = "{num}"
-resetTransient = false
+args.value = "{{num}}"
+finalKey = false
 mode = ["normal", "visual", "awaitingMotion"]
 hideInDocs = true
 
@@ -261,13 +259,11 @@ hideInDocs = true
 # ## Insert Mode
 #- ==============================================================
 # There are a limited number of commands available directly from insert mode.
-[[path]]
+[[default]]
 id = "insert"
-name = "insert"
-description = "Insert mode commands"
 
 [[bind]]
-path = "insert"
+defaults = "insert"
 key = "ctrl+h"
 name = "delete ←"
 mode = "insert"
@@ -275,7 +271,7 @@ description = "delete left"
 command = "deleteLeft"
 
 [[bind]]
-path = "insert"
+defaults = "insert"
 key = "ctrl+w"
 name = "delete word ←"
 mode = "insert"
@@ -283,7 +279,7 @@ description = "delete word left"
 command = "deleteWordLeft"
 
 [[bind]]
-path = "insert"
+defaults = "insert"
 key = "ctrl+j"
 name = "linebreak"
 mode = "insert"
@@ -291,7 +287,7 @@ description = "insert line break"
 command = "lineBreakInsert"
 
 [[bind]]
-path = "action.basic"
+defaults = "action.basic"
 key = "ctrl+t"
 name = "indent"
 mode = ["insert"]
@@ -299,7 +295,7 @@ description = "Indent lines"
 command = "editor.action.indentLines"
 
 [[bind]]
-path = "action.basic"
+defaults = "action.basic"
 key = "ctrl+d"
 name = "outdent"
 mode = ["insert"]
@@ -309,31 +305,28 @@ command = "editor.action.outdentLines"
 #- ==============================================================
 #- ## Replace Mode
 #- ==============================================================
-[[path]]
+[[default]]
 id = "replace"
-name = "replace"
 
 [[bind]]
-path = "replace"
+defaults = "replace"
 name = "replace"
 mode = "replace"
-foreach.key = ["{key:[a-z0-9]}", "shift+{key: [a-z0-9]}"]
-key = "{key}"
+foreach.key = ["{{key:[a-z0-9]}}", "shift+{{key: [a-z0-9]}}"]
+key = "{{key}}"
 command = "runCommands"
 hideInDocs = true
 hideInPalette = true
 args.commands = [
-      { command = "master-key.replaceChar", args = {char = "{key}"}},
+      { command = "master-key.replaceChar", args = {char = "{{key}}"}},
       { command = "cursorMove", args = {by = "char", to = "right"}}
 ]
 
 #- ==============================================================
 # ## Actions
 #- ==============================================================
-[[path]]
+[[default]]
 id = "action"
-name = "Actions"
-description = "Commands that change the text"
 default.kind = "action"
 
 
@@ -341,15 +334,13 @@ default.kind = "action"
 # ### Basic Actions
 #- ==============================================================
 # These commands make some immediate change to the text, they don't require an associated motion.
-[[path]]
+[[default]]
 id = "action.basic"
-name = "Basic Actions"
-description = "These commands make some immediate change to the text, either by acting on already marked text in visual mode, or because they don't require a text object."
 default.kind = "action"
-when = "!suggestWidgetVisible && editorTextFocus && !findWidgetVisible"
+appendWhen = "!suggestWidgetVisible && editorTextFocus && !findWidgetVisible"
 
 [[bind]]
-path = "action.basic"
+defaults = "action.basic"
 key = "x"
 mode = "normal"
 name = "delete char"
@@ -362,9 +353,9 @@ args.commands = [
 ]
 
 [[bind]]
-path = "action.basic"
+defaults = "action.basic"
 foreach.key = ["x", "d"]
-key = "{key}"
+key = "{{key}}"
 mode = ["visual"]
 name = "delete"
 combinedName = "delete"
@@ -378,9 +369,9 @@ args.commands = [
 ]
 
 [[bind]]
-path = "action.basic"
+defaults = "action.basic"
 foreach.key = ["x", "d"]
-key = "{key}"
+key = "{{key}}"
 mode = ["normal"]
 name = "delete"
 when = "editorHasSelection"
@@ -395,7 +386,7 @@ args.commands = [
 ]
 
 [[bind]]
-path = "action.basic"
+defaults = "action.basic"
 key = "shift+d"
 name = "delete eol"
 description = """without a count: delete from current char to end of line. with a count:
@@ -410,7 +401,7 @@ args.commands = [
 ]
 
 [[bind]]
-path = "action.basic"
+defaults = "action.basic"
 key = "shift+d"
 name = "delete eol"
 description = """without a count: delete from current char to end of line. with a count:
@@ -428,7 +419,7 @@ args.commands = [
 ]
 
 [[bind]]
-path = "action.basic"
+defaults = "action.basic"
 key = "c"
 name = "change"
 description = "Change text object"
@@ -440,7 +431,7 @@ args.commands = ["editor.action.clipboardCutAction", "master-key.enterInsert"]
 
 
 [[bind]]
-path = "action.targeted"
+defaults = "action.targeted"
 key = "c"
 name = "change"
 description = "delete selected text, enter insert mode"
@@ -450,7 +441,7 @@ command = "runCommands"
 args.commands = ["editor.action.clipboardCutAction", "master-key.enterInsert"]
 
 [[bind]]
-path = "action.basic"
+defaults = "action.basic"
 key = "shift+c"
 name = "change eol"
 description = """without a count: change from current char to end of line. With a count:
@@ -466,7 +457,7 @@ args.commands = [
 ]
 
 [[bind]]
-path = "action.basic"
+defaults = "action.basic"
 key = "shift+c"
 name = "change eol"
 description = """without a count: change from current char to end of line. With a count:
@@ -484,12 +475,12 @@ args.commands = [
 ]
 
 [[bind]]
-path = "action.basic"
+defaults = "action.basic"
 key = "c"
 name = "change line"
 hideInDocs = true
 description = "Change line"
-if = "master-key.changing_on"
+whenComputed = "master-key.changing_on"
 command = "runCommands"
 args.commands = [
       "expandLineSelection",
@@ -499,7 +490,7 @@ args.commands = [
 mode = ["awaitingMotion"]
 
 [[bind]]
-path = "action.basic"
+defaults = "action.basic"
 key = "shift+y"
 name = "yank line"
 when = "master-key.count <= 1"
@@ -508,7 +499,7 @@ description = "yank \\<count\\> lines"
 command = "editor.action.clipboardCopyAction"
 
 [[bind]]
-path = "action.basic"
+defaults = "action.basic"
 key = "shift+y"
 name = "yank line"
 when = "master-key.count > 1"
@@ -523,7 +514,7 @@ args.commands = [
 ]
 
 [[bind]]
-path = "action.basic"
+defaults = "action.basic"
 key = "y"
 name = "yank"
 description = "yank selected text"
@@ -537,7 +528,7 @@ args.commands = [
 mode = ["visual"]
 
 [[bind]]
-path = "action.basic"
+defaults = "action.basic"
 key = "shift+j"
 name = "join"
 when = "master-key.count <= 1"
@@ -546,7 +537,7 @@ command = "editor.action.joinLines"
 mode = ["normal", "visual"]
 
 [[bind]]
-path = "action.basic"
+defaults = "action.basic"
 key = "shift+j"
 name = "join"
 when = "master-key.count > 1"
@@ -560,7 +551,7 @@ args.commands = [
 mode = ["normal", "visual"]
 
 [[bind]]
-path = "action.basic"
+defaults = "action.basic"
 key = "g shift+j"
 name = "join (no space)"
 description = "joins lines with no separator. in normal mode joins the current and next line"
@@ -569,7 +560,7 @@ args.separator = ""
 mode = ["normal", "visual"]
 
 [[bind]]
-path = "action.basic"
+defaults = "action.basic"
 key = "r"
 name = "replace char"
 mode = "normal"
@@ -577,7 +568,7 @@ description = "replace the character under the cursor"
 command = "master-key.replaceChar"
 
 [[bind]]
-path = "action.basic"
+defaults = "action.basic"
 key = "p"
 name = "paste"
 mode = ["normal", "visual"]
@@ -585,7 +576,7 @@ description = "paste clipboard contents"
 command = "editor.action.clipboardPasteAction"
 
 [[bind]]
-path = "action.basic"
+defaults = "action.basic"
 name = "open below"
 description = "without selection: open a line below current line and enter insert,"
 key = "o"
@@ -598,7 +589,7 @@ combinedDescription = "open line below / above current line"
 args.commands = ["editor.action.insertLineAfter", "master-key.enterInsert"]
 
 [[bind]]
-path = "action.basic"
+defaults = "action.basic"
 name = "open above"
 key = "shift+o"
 mode =  "normal"
@@ -610,9 +601,9 @@ combinedDescription = "open line below / above current line"
 args.commands = [ "editor.action.insertLineBefore", "master-key.enterInsert" ]
 
 [[bind]]
-path = "action.basic"
+defaults = "action.basic"
 foreach.key = ["o", "shift+o"]
-key = "{key}"
+key = "{{key}}"
 combinedName = "open below/above, act →/←"
 combinedKey = "o/shift+o"
 combinedDescription = "move cursor to end/start of selection"
@@ -621,7 +612,7 @@ mode = ["normal", "visual"]
 command = "selection-utilities.exchangeAnchorActive"
 
 [[bind]]
-path = "action.basic"
+defaults = "action.basic"
 key = "u"
 name = "lowercase"
 description = "convert to lowercase"
@@ -636,7 +627,7 @@ args.commands = [
 ]
 
 [[bind]]
-path = "action.basic"
+defaults = "action.basic"
 key = "shift+u"
 name = "uppercase"
 description = "convert to uppercase"
@@ -651,7 +642,7 @@ args.commands = [
 ]
 
 [[bind]]
-path = "action.basic"
+defaults = "action.basic"
 key = "shift+."
 name = "indent"
 mode = ["visual"]
@@ -659,7 +650,7 @@ description = "indent selected text"
 command = "editor.action.indentLines"
 
 [[bind]]
-path = "action.basic"
+defaults = "action.basic"
 key = "shift+,"
 name = "outdent"
 mode = ["visual"]
@@ -670,15 +661,13 @@ command = "editor.action.outdentLines"
 # ### Targeted Actions
 #- ==============================================================
 # These commands require information about what text to apply the change to. The commands that support visual mode will act on the currently selected text. In normal mode a motion or text object must be provided after the command. They support counts, for example `3 d w` or `d 3 w` will delete 3 words.
-[[path]]
+[[default]]
 id = "action.targeted"
-name = "Targeted Actions"
-description = "These actions operate on a provided text action"
 default.kind = "action"
-when = "editorTextFocus"
+appendWhen = "editorTextFocus"
 
 [[bind]]
-path = "action.targeted"
+defaults = "action.targeted"
 key = "g"
 hideInDocs = true
 command = "master-key.prefix"
@@ -687,7 +676,7 @@ command = "master-key.prefix"
 #- Commands set relevant flags (generally select_on), then push commands to the stack that should be run after the motion is complete
 #- Every motion uses master-key.replayFromStack after completing.
 [[bind]]
-path = "action.targeted"
+defaults = "action.targeted"
 key = "g u"
 name = "lowercase"
 description = "convert to lowercase"
@@ -718,7 +707,7 @@ args.value = [
 ]
 
 [[bind]]
-path = "action.targeted"
+defaults = "action.targeted"
 key = "g shift+u"
 name = "uppercase"
 description = "convert to uppercase"
@@ -749,7 +738,7 @@ args.value = [
 ]
 
 [[bind]]
-path = "action.targeted"
+defaults = "action.targeted"
 key = "y"
 name = "yank"
 description = "yank"
@@ -785,7 +774,7 @@ args.value = [
 
 
 [[bind]]
-path = "action.basic"
+defaults = "action.basic"
 #- I don't want people to have to think about this as awaitingMotion mode. Ideally would be documented as `y y` in normal mode.
 #- it's ok for text object like 'a w'. It's not ok here because it's not a general purpose text object, it's a specific
 #- shortcut when the mode is initiated with 'y'
@@ -793,19 +782,19 @@ key = "y"
 name = "yank line"
 description = "yank line (only if awaitingMotion mode was initialized with `y`, essentially `y y`)"
 command = "runCommands"
-if = "master-key.yanking_on"
+whenComputed = "master-key.yanking_on"
 args.commands = ["editor.action.clipboardCopyAction", "master-key.enterNormal", "master-key.replayFromStack"]
 mode = ["awaitingMotion"]
 
 [[bind]]
-path = "action.targeted"
+defaults = "action.targeted"
 key = "d"
 name = "delete"
 description = "delete"
 when = "!editorHasSelection && editorTextFocus"
 mode = "normal"
 command = "runCommands"
-resetTransient = false
+finalKey = false
 
 [[bind.args.commands]]
 command = "master-key.setFlag"
@@ -831,12 +820,12 @@ args.value = [
 ]
 
 [[bind]]
-path = "action.targeted"
+defaults = "action.targeted"
 key = "d"
 name = "delete"
 description = "delete line (only if awaitingMotion mode was initialized with `d`, essentially `d d`)"
 when = "editorTextFocus"
-if = "master-key.deleting_on"
+whenComputed = "master-key.deleting_on"
 mode = "awaitingMotion"
 command = "runCommands"
 args.commands = [
@@ -848,7 +837,7 @@ args.commands = [
 ]
 
 [[bind]]
-path = "action.targeted"
+defaults = "action.targeted"
 key = "c"
 name = "change"
 description = "delete and enter insert mode"
@@ -881,14 +870,14 @@ args.value = [
 ]
 
 [[bind]]
-path = "action.targeted"
+defaults = "action.targeted"
 key = "shift+."
 name = "indent"
 description = "indent"
 when = "editorTextFocus"
 mode = "normal"
 command = "runCommands"
-resetTransient = false
+finalKey = false
 
 [[bind.args.commands]]
 command = "master-key.setFlag"
@@ -919,13 +908,13 @@ args.value = [
 ]
 
 [[bind]]
-#- this felt like the appropriate place in the documentation, but this path is needed
+#- this felt like the appropriate place in the documentation, but this defaults is needed
 #- for the repeating to work as you'd expect
-path = "motion.obj"
+defaults = "motion.obj"
 key = "shift+."
 name = "indent"
 description = "indent current line (only if awaitingMotion mode was initialized with `shift+.`, essentially `shift+. shift+.`)"
-if = "indenting_on"
+whenComputed = "indenting_on"
 mode = "awaitingMotion"
 when = "master-key.count >= 1"
 command = "runCommands"
@@ -935,24 +924,24 @@ args.commands = [
 ]
 
 [[bind]]
-path = "motion.obj"
+defaults = "motion.obj"
 key = "shift+."
 name = "indent"
 mode = "awaitingMotion"
-if = "indenting_on"
+whenComputed = "indenting_on"
 when = "master-key.count < 1"
 description = "indent current line (only if awaitingMotion mode was initialized with `shift+.`, essentially `shift+. shift+.`)"
 command = "master-key.replayFromStack"
 
 [[bind]]
-path = "action.targeted"
+defaults = "action.targeted"
 key = "shift+,"
 name = "outdent"
 description = "outdent"
 when = "editorTextFocus"
 mode = "normal"
 command = "runCommands"
-resetTransient = false
+finalKey = false
 
 [[bind.args.commands]]
 command = "master-key.setFlag"
@@ -981,11 +970,11 @@ args.value = [
 ]
 
 [[bind]]
-path = "motion.obj"
+defaults = "motion.obj"
 key = "shift+,"
 name = "outdent"
 mode = "awaitingMotion"
-if = "outdenting_on"
+whenComputed = "outdenting_on"
 when = "master-key.count >= 1"
 description = "outdent current line (only if awaitingMotion mode was initialized with `shift+,`, essentially `shift+, shift+,`)"
 command = "runCommands"
@@ -995,10 +984,10 @@ args.commands = [
 ]
 
 [[bind]]
-path = "motion.obj"
+defaults = "motion.obj"
 key = "shift+,"
 name = "outdent"
-if = "outdenting_on"
+whenComputed = "outdenting_on"
 mode = "awaitingMotion"
 when = "master-key.count < 1"
 description = "outdent lines"
@@ -1012,21 +1001,18 @@ command = "master-key.replayFromStack"
 # ### Basic Motions
 #- ==============================================================
 # Basic motions can be used directly to navigate text, or in combination with targeted actions.
-[[path]]
+[[default]]
 id = "motion"
-name = "Motions"
-when = "editorTextFocus && !findWidgetVisible"
+appendWhen = "editorTextFocus && !findWidgetVisible"
 default.mode = "normal"
 
-[[path]]
+[[default]]
 id = "motion.prim"
-name = "Primitive Motions"
-description = "Motions fundamental to moving around in the editor. Can be used directly as motions as well as as text objects."
 default.command = "runCommands"
 default.mode = ["normal", "visual", "awaitingMotion"]
 
 [[bind]]
-path = "motion.prim"
+defaults = "motion.prim"
 key = "h"
 name = "←"
 combinedName = "←/→"
@@ -1039,7 +1025,7 @@ args.commands = [
 ]
 
 [[bind]]
-path = "motion.prim"
+defaults = "motion.prim"
 key = "l"
 name = "→"
 combinedName = "←/→"
@@ -1052,7 +1038,7 @@ args.commands = [
 ]
 
 [[bind]]
-path = "motion.prim"
+defaults = "motion.prim"
 key = "j"
 name = "↓"
 combinedName = "↓/↑"
@@ -1065,7 +1051,7 @@ args.commands = [
 ]
 
 [[bind]]
-path = "motion.prim"
+defaults = "motion.prim"
 key = "k"
 name = "↑"
 description = "move up"
@@ -1076,14 +1062,14 @@ args.commands = [
 ]
 
 [[bind]]
-path = "motion.prim"
+defaults = "motion.prim"
 key = "g"
 name = "goto"
 hideInDocs = true
 command = "master-key.prefix"
 
 [[bind]]
-path = "motion.prim"
+defaults = "motion.prim"
 key = "g j"
 name = "wrapped ↓"
 combinedName = "wrapped ↓/↑"
@@ -1096,7 +1082,7 @@ args.commands = [
 ]
 
 [[bind]]
-path = "motion.prim"
+defaults = "motion.prim"
 key = "g k"
 name = "wrapped ↑"
 description = "move up"
@@ -1107,7 +1093,7 @@ args.commands = [
 ]
 
 [[bind]]
-path = "motion.prim"
+defaults = "motion.prim"
 key = "shift+g"
 priority = 1
 name = "doc end"
@@ -1117,13 +1103,13 @@ mode = ["normal", "visual", "awaitingMotion"]
 args.commands = [
       #- implemented this way so that the documentation doesn't have separate entries, 
       #- there's not a 'combinedModes' option
-      { if = "mode === 'normal'", command = "cursorBottom" },
-      { if = "mode !== 'normal'", command = "cursorBottomSelect" },
+      { whenComputed = "mode === 'normal'", command = "cursorBottom" },
+      { whenComputed = "mode !== 'normal'", command = "cursorBottomSelect" },
       "master-key.replayFromStack"
 ]
 
 [[bind]]
-path = "motion.prim"
+defaults = "motion.prim"
 key = "g g"
 name = "doc start"
 description = "move to start (line) of document"
@@ -1131,13 +1117,13 @@ mode = ["normal", "visual", "awaitingMotion"]
 args.commands = [
       #- implemented this way so that the documentation doesn't have separate entries, 
       #- there's not a 'combinedModes' option
-      { if = "mode === 'normal'", command = "cursorTop" },
-      { if = "mode !== 'normal'", command = "cursorTopSelect"},
+      { whenComputed = "mode === 'normal'", command = "cursorTop" },
+      { whenComputed = "mode !== 'normal'", command = "cursorTopSelect"},
       "master-key.replayFromStack",
 ]
 
 [[bind]]
-path = "motion.prim"
+defaults = "motion.prim"
 key = "shift+]"
 name = "parag →"
 combinedKey = "shift+[/shift+]"
@@ -1153,7 +1139,7 @@ computedArgs = {value = "(count || 1)", select = "select_on"}
 command = "master-key.replayFromStack"
 
 [[bind]]
-path = "motion.prim"
+defaults = "motion.prim"
 key = "shift+["
 name = "parag ←"
 combinedKey = "shift+[/shift+]"
@@ -1170,7 +1156,7 @@ computedArgs = {value = "-(count || 1)", select = "select_on"}
 command = "master-key.replayFromStack"
 
 [[bind]]
-path = "motion.prim"
+defaults = "motion.prim"
 key = "w"
 name = "subwrd →"
 description = "next subword (camel/snake case)"
@@ -1187,7 +1173,7 @@ computedArgs = {value = "count || 1", select = "select_on"}
 command = "master-key.replayFromStack"
 
 [[bind]]
-path = "motion.prim"
+defaults = "motion.prim"
 key = "b"
 name = "subwrd ←"
 description = "move to previous subword (camel/snake case)"
@@ -1202,7 +1188,7 @@ computedArgs = {value = "-count || -1", select = "select_on"}
 command = "master-key.replayFromStack"
 
 [[bind]]
-path = "motion.prim"
+defaults = "motion.prim"
 key = "shift+w"
 name = "word →"
 description = "next word"
@@ -1219,7 +1205,7 @@ computedArgs = {value = "count || 1", select = "select_on"}
 command = "master-key.replayFromStack"
 
 [[bind]]
-path = "motion.prim"
+defaults = "motion.prim"
 key = "shift+b"
 name = "word ←"
 combinedName = "word ←/→"
@@ -1235,7 +1221,7 @@ computedArgs = {value = "-count || -1", select = "select_on"}
 command = "master-key.replayFromStack"
 
 [[bind]]
-path = "motion.prim"
+defaults = "motion.prim"
 key = "e"
 name = "subwrd end"
 description = "next subword (camel/snake case) end"
@@ -1249,7 +1235,7 @@ computedArgs = {value = "count || 1", select = "select_on"}
 command = "master-key.replayFromStack"
 
 [[bind]]
-path = "motion.prim"
+defaults = "motion.prim"
 key = "shift+e"
 name = "word end"
 description = "next word end"
@@ -1263,21 +1249,21 @@ computedArgs = {value = "count || 1", select = "select_on"}
 command = "master-key.replayFromStack"
 
 [[bind]]
-path = "motion.prim"
+defaults = "motion.prim"
 key = "0"
 name = "start"
 description = "start of line"
 combinedDescription = "move to start"
 command = "runCommands"
-resetTransient = false
+finalKey = false
 args.commands = [
-      { if = "count !== 0", command = "master-key.updateCount", args = { value = "0" } },
-      { if = "count === 0 && !select_on", command = "cursorLineStart" },
-      { if = "count === 0 && select_on", command = "cursorLineStartSelect" },
+      { whenComputed = "count !== 0", command = "master-key.updateCount", args = { value = "0" } },
+      { whenComputed = "count === 0 && !select_on", command = "cursorLineStart" },
+      { whenComputed = "count === 0 && select_on", command = "cursorLineStartSelect" },
 ]
 
 [[bind]]
-path = "motion.prim"
+defaults = "motion.prim"
 key = "shift+6"
 name = "line home"
 description = "toggles between first non-whitespace and absolute first characters in line"
@@ -1285,7 +1271,7 @@ combinedDescription = "move to home"
 command = "cursorHome"
 
 [[bind]]
-path = "motion.prim"
+defaults = "motion.prim"
 key = "g shift+-"
 name = "line end"
 description = "move to last non whitespace char"
@@ -1293,7 +1279,7 @@ command = "cursorMove"
 args.to = "wrappedLineLastNonWhitespaceCharacter"
 
 [[bind]]
-path = "motion.prim"
+defaults = "motion.prim"
 key = "shift+4"
 name = "end"
 description = "end of line"
@@ -1302,13 +1288,13 @@ command = "runCommands"
 args.commands = [
       #- implemented this way so that the documentation doesn't have separate entries, 
       #- there's not a 'combinedModes' option
-      {if = "mode === 'normal'", command = "cursorLineEnd"},
-      {if = "mode !== 'normal'", command = "cursorLineEndSelect"},
+      {whenComputed = "mode === 'normal'", command = "cursorLineEnd"},
+      {whenComputed = "mode !== 'normal'", command = "cursorLineEndSelect"},
       {command = "master-key.replayFromStack"}
 ]
 
 [[bind]]
-path = "motion.prim"
+defaults = "motion.prim"
 key = "shift+5"
 name = "to bracket"
 mode = ["normal", "visual", "awaitingMotion"]
@@ -1317,9 +1303,9 @@ command = "runCommands"
 args.commands = [
       #- implemented this way so that the documentation doesn't have separate entries, 
       #- there's not a 'combinedModes' option
-      { if = "mode === 'normal'", command = "editor.action.jumpToBracket" },
-      { if = "mode !== 'normal'", command = "selection-utilities.expandWithinBrackets" },
-      { if = "mode !== 'normal'", command = "master-key.replayFromStack" },
+      { whenComputed = "mode === 'normal'", command = "editor.action.jumpToBracket" },
+      { whenComputed = "mode !== 'normal'", command = "selection-utilities.expandWithinBrackets" },
+      { whenComputed = "mode !== 'normal'", command = "master-key.replayFromStack" },
 ]
 
 #- ==============================================================
@@ -1327,10 +1313,8 @@ args.commands = [
 #- ==============================================================
 # Search motions use user input to move the cursor/selection to a specific location.
 
-[[path]]
+[[default]]
 id = "motion.search"
-name = "Search Related Motions"
-description = "Motions related to searching for text in a document"
 default.command = "master-key.search"
 default.args.caseSensitive = true
 default.args.backwards = false
@@ -1339,7 +1323,7 @@ default.args.wrapAround = true
 default.mode = ["normal", "visual", "awaitingMotion"]
 
 [[bind]]
-path = "motion.search"
+defaults = "motion.search"
 key = "f"
 name = "find char"
 description = "Find the next char (include char in selection)"
@@ -1361,7 +1345,7 @@ args = { name = "searchingbackwards_on", value = false }
 command = "master-key.replayFromStack"
 
 [[bind]]
-path = "motion.search"
+defaults = "motion.search"
 key = "shift+f"
 name = "find char back"
 description = "Find the previous char (include char in selection)"
@@ -1381,7 +1365,7 @@ args = { name = "searchingbackwards_on", value = true }
 command = "master-key.replayFromStack"
 
 [[bind]]
-path = "motion.search"
+defaults = "motion.search"
 key = "t"
 name = "to char"
 description = "Find the next char (exclude char in selection)"
@@ -1406,7 +1390,7 @@ args = { name = "searchingbackwards_on", value = false }
 command = "master-key.replayFromStack"
 
 [[bind]]
-path = "motion.search"
+defaults = "motion.search"
 key = "shift+t"
 name = "to char back"
 description = "Find the previous char (exclude char in selection)"
@@ -1430,7 +1414,7 @@ args = { name = "searchingbackwards_on", value = true }
 command = "master-key.replayFromStack"
 
 [[bind]]
-path = "motion.search"
+defaults = "motion.search"
 key = "/"
 name = "search →"
 description = "search forwards"
@@ -1456,7 +1440,7 @@ args = { name = "searchingbackwards_on", value = false }
 command = "master-key.replayFromStack"
 
 [[bind]]
-path = "motion.search"
+defaults = "motion.search"
 key = "shift+/"
 name = "search ←"
 description = "search backwards"
@@ -1480,9 +1464,9 @@ args = { name = "searchingbackwards_on", value = true }
 command = "master-key.replayFromStack"
 
 [[bind]]
-path = "motion.search"
+defaults = "motion.search"
 foreach.key = ["n", ";"]
-key = "{key}"
+key = "{{key}}"
 combinedName = "→ search"
 combinedKey = "n/;"
 combinedDescription = "go to the next match of the search query"
@@ -1490,14 +1474,14 @@ name = "→ search"
 description = "go to the next match of the search query"
 command = "runCommands"
 args.commands = [
-      { command = "master-key.nextMatch", args = { register = "search" }, computedArgs = { repeat = "(count || 1)-1" }},
+      { command = "master-key.nextMatch", args = { register = "search" }, computedArgs = { computedRepeat = "(count || 1)-1" }},
       "master-key.replayFromStack",
 ]
 
 [[bind]]
-path = "motion.search"
+defaults = "motion.search"
 foreach.key = ["shift+n", ","]
-key = "{key}"
+key = "{{key}}"
 name = "← search"
 description = "go to the previous match of the search query"
 combinedName = "← search"
@@ -1505,7 +1489,7 @@ combinedDescription = "go to the previous match of the search query"
 combinedKey = "shift+n/,"
 command = "runCommands"
 args.commands = [
-      { command = "master-key.previousMatch", args = { register = "search" }, computedArgs = { repeat = "(count || 1)-1" }},
+      { command = "master-key.previousMatch", args = { register = "search" }, computedArgs = { computedRepeat = "(count || 1)-1" }},
       "master-key.replayFromStack",
 ]
 
@@ -1514,16 +1498,14 @@ args.commands = [
 #- ==============================================================
 # Text objects can be used in combination with targeted actions, but cannot be used directly for navigation in normal mode.
 
-[[path]]
+[[default]]
 id = "motion.obj"
-name = "Text Objects"
-description = "These can only be used as object for targeted commands, they cannot be used as independent motions."
 default.command = "runCommands"
 default.mode = ["visual", "awaitingMotion"]
 
 
 [[bind]]
-path = "motion.obj"
+defaults = "motion.obj"
 key = "i w"
 name = "in subword"
 description = "in subword "
@@ -1533,7 +1515,7 @@ args.commands = [
 ]
 
 [[bind]]
-path = "motion.obj"
+defaults = "motion.obj"
 key = "a w"
 name = "in word"
 description = "in word"
@@ -1543,7 +1525,7 @@ args.commands = [
 ]
 
 [[bind]]
-path = "motion.obj"
+defaults = "motion.obj"
 key = "i p"
 name = "in paragraph"
 description = "in paragraph"
@@ -1553,7 +1535,7 @@ args.commands = [
 ]
 
 [[bind]]
-path = "motion.obj"
+defaults = "motion.obj"
 key = "a p"
 name = "around paragraph"
 description = "around paragraph"
@@ -1564,8 +1546,8 @@ args.commands = [
 
 [[bind]]
 foreach.key = ["'", "shift+'"]
-path = "motion.obj"
-key = "i {key}"
+defaults = "motion.obj"
+key = "i {{key}}"
 name = "in quotes"
 description = "in quotes"
 args.commands = [
@@ -1574,7 +1556,7 @@ args.commands = [
 ]
 
 [[bind]]
-path = "motion.obj"
+defaults = "motion.obj"
 key = "a '"
 name = "around quotes"
 description = "in quotes"
@@ -1585,7 +1567,7 @@ args.commands = [
 ]
 
 [[bind]]
-path = "motion.obj"
+defaults = "motion.obj"
 key = "i b"
 name = "in brackets"
 description = "in brackets"
@@ -1595,7 +1577,7 @@ args.commands = [
 ]
 
 [[bind]]
-path = "motion.obj"
+defaults = "motion.obj"
 key = "a b"
 name = "around brackets"
 description = "around brackets"
@@ -1607,16 +1589,14 @@ args.commands = [
 #- ==============================================================
 # ## Window Management
 #- ==============================================================
-[[path]]
+[[default]]
 id = "window"
-name = "Window Manipulation"
-description = "Commands for navigating and manipulating the window/editor panes in some way"
 default.kind = "util"
 default.mode = "normal"
-when = "editorTextFocus && !findWidgetVisible"
+appendWhen = "editorTextFocus && !findWidgetVisible"
 
 [[bind]]
-path = "window"
+defaults = "window"
 name = "scroll ↓"
 description = "scroll down one line"
 key = "ctrl+e"
@@ -1629,7 +1609,7 @@ args.by = "line"
 computedArgs.value = "count || 1"
 
 [[bind]]
-path = "window"
+defaults = "window"
 name = "scroll ↑"
 description = "scroll up one line"
 key = "ctrl+y"
@@ -1642,7 +1622,7 @@ args.by = "line"
 computedArgs.value = "count || 1"
 
 [[bind]]
-path = "window"
+defaults = "window"
 name = "scroll ↓ 1/2pg"
 description = "scroll down half page"
 key = "ctrl+d"
@@ -1656,7 +1636,7 @@ args.revealCursor = true
 computedArgs.value = "count || 1"
 
 [[bind]]
-path = "window"
+defaults = "window"
 name = "scroll ↑ 1/2pg"
 description = "scroll up half page"
 key = "ctrl+u"
@@ -1670,7 +1650,7 @@ args.revealCursor = true
 computedArgs.value = "count || 1"
 
 [[bind]]
-path = "window"
+defaults = "window"
 name = "scroll ↓ pg"
 description = "scroll down one page"
 key = "ctrl+f"
@@ -1684,7 +1664,7 @@ args.revealCursor = true
 computedArgs.value = "count || 1"
 
 [[bind]]
-path = "window"
+defaults = "window"
 name = "scroll ↑ pg"
 description = "scroll up one page"
 key = "ctrl+b"
@@ -1698,7 +1678,7 @@ args.revealCursor = true
 computedArgs.value = "count || 1"
 
 [[bind]]
-path = "window"
+defaults = "window"
 name = "curs win bottom"
 description = "move cursor to bottom of viewport"
 key = "shift+l"
@@ -1707,7 +1687,7 @@ args.to = "viewPortBottom"
 args.by = "line"
 
 [[bind]]
-path = "window"
+defaults = "window"
 name = "curs win top"
 description = "move cursor to center of viewport"
 key = "shift+m"
@@ -1716,7 +1696,7 @@ args.to = "viewPortCenter"
 args.by = "line"
 
 [[bind]]
-path = "window"
+defaults = "window"
 name = "curs win top"
 description = "move cursor to top of viewport"
 key = "shift+h"
@@ -1725,7 +1705,7 @@ args.to = "viewPortTop"
 args.by = "line"
 
 [[bind]]
-path = "window"
+defaults = "window"
 name = "curs win cen"
 description = "center window so that primary cursor is at the center"
 key = "z z"
@@ -1733,7 +1713,7 @@ command = "selection-utilities.revealActive"
 args.at = "center"
 
 [[bind]]
-path = "window"
+defaults = "window"
 name = "curs. win bot"
 description = "center window so that primary cursor is at the bottom"
 key = "z b"
@@ -1741,7 +1721,7 @@ command = "selection-utilities.revealActive"
 args.at = "bottom"
 
 [[bind]]
-path = "window"
+defaults = "window"
 name = "win top"
 description = "center window so that primary cursor is at the top"
 key = "z t"
@@ -1749,13 +1729,13 @@ command = "selection-utilities.revealActive"
 args.at = "top"
 
 [[bind]]
-path = "window"
+defaults = "window"
 key = "ctrl+w"
 hideInDocs = true
 command = "master-key.prefix"
 
 [[bind]]
-path = "window"
+defaults = "window"
 key = "ctrl+w s"
 name = "split horiz"
 description = "split window horizontally"
@@ -1765,7 +1745,7 @@ combinedDescription = "split window horizontally/vertically"
 command = "workbench.action.splitEditorDown"
 
 [[bind]]
-path = "window"
+defaults = "window"
 key = "ctrl+w v"
 name = "split vert"
 description = "split window virtically"
@@ -1775,7 +1755,7 @@ combinedDescription = "split window horizontally/vertically"
 command = "workbench.action.splitEditorRight"
 
 [[bind]]
-path = "window"
+defaults = "window"
 name = "next window"
 combinedName = "next/previous window"
 description = "move to next window"
@@ -1784,21 +1764,21 @@ key = "ctrl+w w"
 command = "workbench.action.focusNextGroup"
 
 [[bind]]
-path = "window"
+defaults = "window"
 name = "close pane"
 description = "close the given group of editors"
 key = "ctrl+w q"
 command = "workbench.action.closeEditorsInGroup"
 
 [[bind]]
-path = "window"
+defaults = "window"
 name = "equal"
 description = "equalize size of all windows"
 key = "ctrl+w ="
 command = "workbench.action.evenEditorWidths"
 
 [[bind]]
-path = "window"
+defaults = "window"
 name = "tab →"
 description = "go forward in tabs"
 combinedName = "tab →/←"
@@ -1808,7 +1788,7 @@ key = "g t"
 command = "workbench.action.nextEditor"
 
 [[bind]]
-path = "window"
+defaults = "window"
 name = "tab →"
 description = "go back in tabs"
 key = "g shift+t"
@@ -1818,7 +1798,7 @@ combinedKey = "t/shift+t"
 command = "workbench.action.previousEditor"
 
 [[bind]]
-path = "window"
+defaults = "window"
 name = "close & save"
 description = "close current tab and save"
 key = "shift+z shift+z"
@@ -1831,37 +1811,35 @@ args.commands = [
 #- ==============================================================
 # ## History
 #- ==============================================================
-[[path]]
+[[default]]
 id = "history"
-name = "History Commands"
-description = "Commands that interact with edit or cursor history."
-when = "editorTextFocus"
+appendWhen = "editorTextFocus"
 default.mode = "normal"
 
 [[bind]]
-path = "history"
+defaults = "history"
 name = "undo"
 key = "u"
 command = "undo"
 
 [[bind]]
-path = "history"
+defaults = "history"
 name = "redo"
 foreach.key = ["shift+u", "ctrl+r"]
 combinedName = "redo"
 combinedKey = "shift+u/ctrl+r"
-key = "{key}"
+key = "{{key}}"
 command = "redo"
 
 [[bind]]
-path = "history"
+defaults = "history"
 name = "repeat action"
 description = """
 Repeat the last action + motion command 
 """
 key = "."
 command = "runCommands"
-repeat = "count"
+computedRepeat = "count"
 
 [[bind.args.commands]]
 command = "master-key.replayFromHistory"
@@ -1870,11 +1848,11 @@ command = "master-key.replayFromHistory"
 #- 2 d w 
 #- d 2 w 
 #- shift+a , escape 
-args.range.from = """
-((commandHistory[i].path.startsWith('count') || commandHistory[i].path.startsWith('action')) && commandHistory[i-1].path.startsWith('motion'))
+args.whereComputedRangeIs.from = """
+((commandHistory[i].defaults.startsWith('count') || commandHistory[i].defaults.startsWith('action')) && commandHistory[i-1].defaults.startsWith('motion'))
 """
-args.range.to= """
-(commandHistory[i].path.startsWith('core') || commandHistory[i].path.startsWith('motion')) && (commandHistory[i-1].path.startsWith('action') || commandHistory[i-1].path.startsWith('count'))
+args.whereComputedRangeIs.to= """
+(commandHistory[i].defaults.startsWith('core') || commandHistory[i].defaults.startsWith('motion')) && (commandHistory[i-1].defaults.startsWith('action') || commandHistory[i-1].defaults.startsWith('count'))
 """
 
 [[bind.args.commands]]
@@ -1883,22 +1861,20 @@ command = "master-key.enterNormal"
 #- ==============================================================
 # ## Utils
 #- ==============================================================
-[[path]]
+[[default]]
 id = "util"
-name = "util"
-description = "Various things to do"
 default.mode = "normal"
-when = "editorTextFocus"
+appendWhen = "editorTextFocus"
 
 [[bind]]
-path = "util"
+defaults = "util"
 key = "shift+k"
 name = "manpage"
 description = "open manpage of term under cursor"
 command = "manpages.openFromCursor"
 
 [[bind]]
-path = "util"
+defaults = "util"
 name = "reload bindings"
 key = "m m"
 description = "reload keybindings"
